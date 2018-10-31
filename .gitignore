@@ -1,4 +1,6 @@
 x64/
+Debug/
+Release/
 .vs/
 /CV_cer_project.vcxproj.filters
 /CV_cer_project.vcxproj
