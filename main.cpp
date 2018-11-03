@@ -9,7 +9,8 @@ using namespace std;
 int main() {
 	int ret = 0, loop = 1; // ret -> return, loop -> while
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
-	cout << "CV_cer_project." << endl << "Opening camera..." << endl;
+	cout << "CV_cer_project." << endl << "Toggle SPACE button to switch between CPU and GPU mode." << endl;
+	cout<< "Opening camera..." << endl;
 	
 	Mat mainframe; // main frame from camera
 	VideoCapture capture(0); // open the first camera
