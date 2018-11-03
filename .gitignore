@@ -2,6 +2,9 @@ x64/
 Debug/
 Release/
 .vs/
+cv_ver_project/
+/cv_cer_project.sln
+/cv_cer_project.sdf
 /CV_cer_project.vcxproj.filters
 /CV_cer_project.vcxproj
 /CV_cer_project.sln
