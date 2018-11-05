@@ -3,20 +3,23 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "_cpu\process_cpu.h"
+#include "_gpu\process_gpu.h"
+
 using namespace cv;
 using namespace std;
 
 int main() {
 	int ret = 0, loop = 1; // ret -> return, loop -> while
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
-	cout << "CV_cer_project." << endl << "Toggle SPACE button to switch between CPU and GPU mode." << endl;
-	cout<< "Opening camera..." << endl;
+	cout << "CV_cer_project.\n\nToggle SPACE button to switch between CPU and GPU mode.\n";
+	cout << "Press ESC to exit.\n\nOpening camera...\n";
 	
 	Mat mainframe; // main frame from camera
 	VideoCapture capture(0); // open the first camera
 	if (!capture.isOpened())
 	{
-		cerr << "ERROR: Can't initialize camera capture" << endl;
+		cerr << "ERROR: Can't initialize camera capture." << endl;
 		loop = 0;
 		ret = 1;
 	}
