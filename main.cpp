@@ -1,11 +1,12 @@
-//this is the master file. It initializes the project 
+// this is the master file. It initializes the project 
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-#include <experimental\filesystem>
+#include <filesystem>
 
 #include "_cpu\process_cpu.h"
 #include "_gpu\process_gpu.h"
+
 using namespace cv;
 using namespace std;
 namespace fs = std::experimental::filesystem;
@@ -59,8 +60,9 @@ int main( int argc, const char** argv ) {
 			mainframe = process_cpu( mainframe, target_cascade );
 			imshow("window_name", mainframe); // display frame
 		}
-		else { // code for GPU (doesn't use GPU yet)
-			cout << "using GPU" << endl;
+		else { // code for GPU
+			sw = !sw;
+			mainframe = process_gpu( mainframe, target_cascade );
 			imshow("window_name", mainframe); // display frame (not processed yet)
 		}
 	}

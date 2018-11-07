@@ -2,21 +2,20 @@
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 #include <stdio.h>
+
 #include "process_cpu.h"
 
 using namespace std;
 using namespace cv;
-CascadeClassifier cascade;
 
 Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade);
-Mat detect_target( Mat frame );
+Mat detect_target( Mat frame, CascadeClassifier cascade );
 
 Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade) {
-	cascade = target_cascade;
-	return detect_target ( mainframe );
+	return detect_target ( mainframe, target_cascade );
 }
 
-Mat detect_target( Mat frame) { 
+Mat detect_target( Mat frame, CascadeClassifier cascade ) { 
 	std::vector<Rect> targets;
 	Mat frame_gray;
 	cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
