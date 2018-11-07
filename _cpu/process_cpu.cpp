@@ -14,7 +14,7 @@ Mat detect_target( Mat frame );
 
 Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade) {
 	cascade = target_cascade;
-	return /*detect_target ( mainframe );*/ mainframe;
+	return detect_target ( mainframe );
 }
 Mat detect_target( Mat frame) { 
     std::vector<Rect> faces;
@@ -22,7 +22,7 @@ Mat detect_target( Mat frame) {
     cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
     equalizeHist( frame_gray, frame_gray );
     //-- Detect faces
-    cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(30, 30) );
+    cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(48, 48) );
     for ( size_t i = 0; i < faces.size(); i++ )
     {
         Point center( faces[i].x + faces[i].width/2, faces[i].y + faces[i].height/2 );

@@ -19,12 +19,13 @@ int main( int argc, const char** argv ) {
 
 	CommandLineParser parser(argc, argv, // cpu
 		"{help h||}"
-		"{target_cascade|../../_data/cascade.xml|}");
+		"{target_cascade|C:\\Users\\Lorenzo\\Documents\\opencv_\\opencv\\opencv-3.2.0\\data\\haarcascades\\haarcascade_frontalface_default.xml|}");
 	parser.printMessage();
 	String target_cascade_name = parser.get<string>("target_cascade");
-	cout << target_cascade_name;
-	//-- 1. Load the cascades
-	if (!target_cascade.load(target_cascade_name)) { printf("--(!)Error loading target cascade\n"); system("pause"); };
+	if (!target_cascade.load(target_cascade_name)) { // load the cascade
+		printf("--(!)Error loading target cascade\n");
+		system("pause");
+	};
 	
 	Mat mainframe; // main frame from camera
 	VideoCapture capture(0); // open the first camera
