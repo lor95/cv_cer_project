@@ -5,4 +5,3 @@ using namespace cv;
 using namespace std;
 
 Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade );
-Mat detect_target(Mat frame);

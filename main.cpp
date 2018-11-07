@@ -20,7 +20,6 @@ int main( int argc, const char** argv ) {
 	CommandLineParser parser(argc, argv, // cpu
 		"{help h||}"
 		"{target_cascade|C:\\Users\\Lorenzo\\Documents\\opencv_\\opencv\\opencv-3.2.0\\data\\haarcascades\\haarcascade_frontalface_default.xml|}");
-	parser.printMessage();
 	String target_cascade_name = parser.get<string>("target_cascade");
 	if (!target_cascade.load(target_cascade_name)) { // load the cascade
 		printf("--(!)Error loading target cascade\n");
@@ -54,7 +53,6 @@ int main( int argc, const char** argv ) {
 		}
 
 		if (!sw) { // code for CPU
-			cout << "using CPU" << endl;
 			mainframe = process_cpu( mainframe, target_cascade );
 			imshow("window_name", mainframe); // display frame (not processed yet)
 		}
