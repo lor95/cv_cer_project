@@ -9,11 +9,22 @@
 using namespace cv;
 using namespace std;
 
-int main() {
+CascadeClassifier target_cascade;
+
+int main( int argc, const char** argv ) {
 	int ret = 0, loop = 1; // ret -> return, loop -> while
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 	cout << "CV_cer_project.\n\nToggle SPACE button to switch between CPU and GPU mode.\n";
 	cout << "Press ESC to exit.\n\nOpening camera...\n";
+
+	CommandLineParser parser(argc, argv, // cpu
+		"{help h||}"
+		"{target_cascade|../../_data/cascade.xml|}");
+	parser.printMessage();
+	String target_cascade_name = parser.get<string>("target_cascade");
+	cout << target_cascade_name;
+	//-- 1. Load the cascades
+	if (!target_cascade.load(target_cascade_name)) { printf("--(!)Error loading target cascade\n"); system("pause"); };
 	
 	Mat mainframe; // main frame from camera
 	VideoCapture capture(0); // open the first camera
@@ -43,6 +54,7 @@ int main() {
 
 		if (!sw) { // code for CPU
 			cout << "using CPU" << endl;
+			mainframe = process_cpu( mainframe, target_cascade );
 			imshow("window_name", mainframe); // display frame (not processed yet)
 		}
 		else { // code for GPU (doesn't use GPU yet)
