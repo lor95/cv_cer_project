@@ -1,3 +1,7 @@
 #pragma once
+#include <opencv2/objdetect.hpp>
+#include <opencv2/imgproc.hpp>
+using namespace cv;
+using namespace std;
 
-int test_cpu();
+Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade );
