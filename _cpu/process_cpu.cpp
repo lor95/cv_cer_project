@@ -48,11 +48,11 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 	}
 	if (i > 1 && !pos.empty()) { // if more than a target is tracked insert the more probable center in trajectory
 		Point last_tr = Point(pos[pos.size() - 1].x, pos[pos.size() - 1].y);
-		double dist = cv::norm(last_tr - centers[0]); // distance between latest tr and centers tracked
-		int index = 0;
+		double dist = norm(last_tr - centers[0]); // distance between latest tr and centers tracked
+		size_t index = 0;
 		for (size_t j = 1; j < i; j++) {
-			if (cv::norm(last_tr - centers[j]) < dist) {
-				dist = cv::norm(last_tr - centers[j]);
+			if (norm(last_tr - centers[j]) < dist) {
+				dist = norm(last_tr - centers[j]);
 				index = j;
 			}
 		}
