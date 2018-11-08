@@ -9,14 +9,14 @@
 
 using namespace cv;
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::tr2::sys;
 
 CascadeClassifier target_cascade;
 
 int main( int argc, const char** argv ) {
 
 	fs::path p = "_data\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
-
+	
 	int ret = 0, loop = 1; // ret -> return, loop -> while
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 	cout << "CV_cer_project.\n\nToggle SPACE button to switch between CPU and GPU mode.\n";
