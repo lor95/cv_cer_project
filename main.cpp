@@ -12,6 +12,8 @@
 #define SWITCH 32 // space
 #define EXIT 27 // esc
 
+#define W 190 //mm for face
+
 using namespace cv;
 using namespace std;
 namespace fs = std::tr2::sys;
@@ -86,7 +88,7 @@ int main( int argc, const char** argv ) {
 		}
 
 		if (!sw) { // code for CPU
-			mainframe = process_cpu( mainframe, target_cascade );
+			mainframe = process_cpu( mainframe, target_cascade, focal_length, W);
 			imshow("window_name", mainframe); // display frame
 		}
 		else { // code for GPU

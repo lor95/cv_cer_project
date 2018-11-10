@@ -11,15 +11,15 @@ using namespace cv;
 std::vector<Point> pos;
 int fail_counter = 0;
 
-Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade);
-Mat main_logic_cpu( Mat frame, CascadeClassifier cascade );
+Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade, double focal_length, double r_width);
+Mat main_logic_cpu( Mat frame, CascadeClassifier cascade, double focal_length, double r_width);
 
-Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade) {
+Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade, double focal_length, double r_width) {
 	putText(mainframe, "USING: CPU", Point2f(10, 20), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255, 255));
-	return main_logic_cpu ( mainframe, target_cascade );
+	return main_logic_cpu ( mainframe, target_cascade, focal_length, r_width );
 }
 
-Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
+Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, double r_width) {
 
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
 		pos.erase(pos.begin()); // delete first point in trajectory
@@ -27,6 +27,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 
 	std::vector<Rect> targets; // target matrixes
 	std::vector<Point> centers; // target centers
+	size_t target = 0; // index of the target
 	Mat fgray;
 	cvtColor( frame, fgray, COLOR_BGR2GRAY );
 	equalizeHist( fgray, fgray );
@@ -44,6 +45,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 1, 8, 0); // draw target
 		if(i == 1) { // only 1 target is tracked
 			pos.push_back(centers[j]);
+			target = j;
 		}
 	}
 	if (i > 1 && !pos.empty()) { // if more than a target is tracked insert the more probable center in trajectory
@@ -57,6 +59,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 			}
 		}
 		pos.push_back(centers[index]);
+		target = index;
 	}
 	if (fail_counter <= 15) {
 		for (size_t j = 1; j < pos.size(); j++) {
@@ -66,12 +69,18 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 	else {
 		pos.clear();
 	}
+	ostringstream dst;
+	//calculate distance;
+	if (!targets.empty()) {
+		double distance = (focal_length * r_width) / (targets[target].width * 10);
+		dst << "Distance: " << distance << "cm";
+	}
 	// write frame data
 	ostringstream target_position;
 	Scalar info_color;
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
-		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = ???}";
+		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "}";
 	}
 	else {
 		info_color = Scalar(0, 0, 255);
@@ -79,5 +88,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade ) {
 	}
 	putText(frame, target_position.str(),
 		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.45, info_color); // position info
+	putText(frame, dst.str(),
+		Point2f(10, 95), FONT_HERSHEY_DUPLEX, 0.7, Scalar(0, 255, 0)); // position info
 	return frame;
 }

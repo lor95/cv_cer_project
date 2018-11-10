@@ -236,7 +236,7 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat&
 	vector<vector<Point2f> > imagePoints);
 
 double _calibration_init( );
-double get_focal_length(Settings &s);
+double get_focal_length(Settings& s);
 
 double _calibration_init( )
 {
