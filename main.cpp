@@ -71,28 +71,31 @@ int main( int argc, const char** argv ) {
 		cout << "CALIBRATION OPTIONS : Press 'n' to continue.Press 'c' to CALIBRATE.\nPress ESC to exit.\n\n";
 	}
 	
+	bool cal = false;
+
 	while (true) { // first loop for calibration options
-		int k = waitKey(1); //waits for a key indefinitely
+		int k = waitKey(1); //waits for a key indefinitely		
 		if (k == CONTINUE) {
 			break;
 		}
 		if (k == CALIBRATE) {
-			// calibrate()
-			cout << "doing some funny calibrations\n\n";
+			cal = true;
 		}
 		if (k == EXIT) {
 			return 0; // exit
 		}
-
 		capture >> mainframe;
 		if (mainframe.empty()) {
 			cerr << "ERROR: Can't grab camera frame." << endl;
 			return 3;
 		}
 		mainframe = _calibration_wait(mainframe);
+		if (cal) {
+			_calibration_init( );
+			cal = !cal;
+		}
 		imshow("window_name", mainframe);
 	}
-
 	cout << "Executing...\n\nCOMMANDS: Toggle SPACE button to switch between CPU and GPU mode.\nPress ESC to exit.\n\n";
 	
 	while (true) { // main loop

@@ -3,4 +3,5 @@
 
 using namespace cv;
 
-Mat _calibration_wait( Mat mainframe );
+Mat _calibration_wait(Mat mainframe);
+int _calibration_init( ); 
