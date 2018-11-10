@@ -36,14 +36,9 @@ public:
 			<< "Calibrate_FixAspectRatio" << aspectRatio
 			<< "Calibrate_AssumeZeroTangentialDistortion" << calibZeroTangentDist
 			<< "Calibrate_FixPrincipalPointAtTheCenter" << calibFixPrincipalPoint
-
 			<< "Write_DetectedFeaturePoints" << writePoints
 			<< "Write_extrinsicParameters" << writeExtrinsics
 			<< "Write_outputFileName" << outputFileName
-
-			<< "Show_UndistortedImage" << showUndistorted
-
-			<< "Input_FlipAroundHorizontalAxis" << flipVertical
 			<< "Input_Delay" << delay
 			<< "Input" << input
 			<< "}";
@@ -62,8 +57,6 @@ public:
 		node["Calibrate_AssumeZeroTangentialDistortion"] >> calibZeroTangentDist;
 		node["Calibrate_FixPrincipalPointAtTheCenter"] >> calibFixPrincipalPoint;
 		node["Calibrate_UseFisheyeModel"] >> useFisheye;
-		node["Input_FlipAroundHorizontalAxis"] >> flipVertical;
-		node["Show_UndistortedImage"] >> showUndistorted;
 		node["Input"] >> input;
 		node["Input_Delay"] >> delay;
 		node["Fix_K1"] >> fixK1;
@@ -208,9 +201,7 @@ public:
 	bool writeExtrinsics;        // Write extrinsic parameters
 	bool calibZeroTangentDist;   // Assume zero tangential distortion
 	bool calibFixPrincipalPoint; // Fix the principal point at the center
-	bool flipVertical;           // Flip the captured images around the horizontal axis
 	string outputFileName;       // The name of the file where to write
-	bool showUndistorted;        // Show undistorted images after calibration
 	string input;                // The input ->
 	bool useFisheye;             // use fisheye camera model for calibration
 	bool fixK1;                  // fix K1 distortion coefficient
@@ -229,8 +220,6 @@ public:
 
 private:
 	string patternToUse;
-
-
 };
 
 static inline void read(const FileNode& node, Settings& x, const Settings& default_value = Settings())
@@ -246,30 +235,24 @@ enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
 	vector<vector<Point2f> > imagePoints);
 
-Mat _calibration_wait(Mat mainframe);
+double _calibration_init( );
+double get_focal_length(Settings &s);
 
-int _calibration_init( );
-
-Mat _calibration_wait(Mat mainframe) {
-	return mainframe;
-}
-
-int _calibration_init( )
+double _calibration_init( )
 {
-	//! [file_read]
+	double ret;
 	Settings s;
 	const string inputSettingsFile = "_data\\calibration_input.xml";
 	FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
 	fs["Settings"] >> s;
 	fs.release();
-
 	vector<vector<Point2f> > imagePoints;
 	Mat cameraMatrix, distCoeffs;
 	Size imageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	clock_t prevTimestamp = 0;
 	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
-	const char ESC_KEY = 27;
+	const char ESC_KEY = 110;
 
 	while (true) {
 
@@ -281,7 +264,7 @@ int _calibration_init( )
 		//-----  If no more image, or got enough, then stop calibration and show result -------------
 		if (mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames)
 		{
-			if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints))
+			if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints)) 
 				mode = CALIBRATED;
 			else
 				mode = DETECTION;
@@ -296,7 +279,6 @@ int _calibration_init( )
 		//! [get_input]
 
 		imageSize = view.size();  // Format input image.
-		if (s.flipVertical)    flip(view, view, 0);
 
 		//! [find_pattern]
 		vector<Point2f> pointBuf;
@@ -349,58 +331,54 @@ int _calibration_init( )
 			// Draw the corners.
 			drawChessboardCorners(view, s.boardSize, Mat(pointBuf), found);
 		}
-		//! [pattern_found]
-		//----------------------------- Output Text ------------------------------------------------
-		//! [output_text]
-		string msg = (mode == CAPTURING) ? "100/100" :
-			mode == CALIBRATED ? "Calibrated" : "Press 'g' to start";
-		int baseLine = 0;
-		Size textSize = getTextSize(msg, 1, 1, 1, &baseLine);
-		Point textOrigin(view.cols - 2 * textSize.width - 10, view.rows - 2 * baseLine - 10);
+
+		string msg = "Press 'c' to calibrate, 'n' to continue.";
 
 		if (mode == CAPTURING)
 		{
-			if (s.showUndistorted)
-				msg = format("%d/%d Undist", (int)imagePoints.size(), s.nrFrames);
-			else
-				msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
+			msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
 		}
 
-		putText(view, msg, textOrigin, 1, 1, mode == CALIBRATED ? GREEN : RED);
+		putText(view, msg, Point2f(10, 30), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255));
 
 		if (blinkOutput)
 			bitwise_not(view, view);
 		//! [output_text]
 		//------------------------- Video capture  output  undistorted ------------------------------
 		//! [output_undistorted]
-		if (mode == CALIBRATED && s.showUndistorted)
+		if (mode == CALIBRATED)
 		{
-			Mat temp = view.clone();
-			if (s.useFisheye)
-				cv::fisheye::undistortImage(temp, view, cameraMatrix, distCoeffs);
-			else
-				undistort(temp, view, cameraMatrix, distCoeffs);
+			cout << "Camera succesfully calibrated.\n\n";
+			ret = cameraMatrix.at<double>(0, 0) * s.aspectRatio; // *s.aspectRatio; //fx * a = focal length
+			break;
 		}
 		//! [output_undistorted]
 		//------------------------------ Show image and check for input commands -------------------
 		//! [await_input]
-		imshow("Image View", view);
+		imshow("calibration_window", view);
 		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
 
-		if (key == ESC_KEY)
+		if (key == ESC_KEY) {
+			ret = get_focal_length(s);
 			break;
+		}
 
-		if (key == 'u' && mode == CALIBRATED)
-			s.showUndistorted = !s.showUndistorted;
-
-		if (s.inputCapture.isOpened() && key == 'g')
+		if (s.inputCapture.isOpened() && key == 'c')
 		{
 			mode = CAPTURING;
 			imagePoints.clear();
 		}
 		//! [await_input]
 	}
-	return 0;
+	destroyAllWindows();
+	return ret;
+}
+
+static double get_focal_length(Settings& s) {
+	FileStorage fs(s.outputFileName, FileStorage::READ);
+	Mat cameraMatrix;
+	fs["camera_matrix"]>>cameraMatrix;
+	return cameraMatrix.at<double>(0, 0);
 }
 
 //! [compute_errors]
@@ -436,13 +414,12 @@ static double computeReprojectionErrors(const vector<vector<Point3f> >& objectPo
 
 	return std::sqrt(totalErr / totalPoints);
 }
-//! [compute_errors]
-//! [board_corners]
+
 static void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Point3f>& corners,
 	Settings::Pattern patternType /*= Settings::CHESSBOARD*/)
 {
 	corners.clear();
-
+	
 	switch (patternType)
 	{
 	case Settings::CHESSBOARD:
@@ -461,7 +438,7 @@ static void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Po
 		break;
 	}
 }
-//! [board_corners]
+
 static bool runCalibration(Settings& s, Size& imageSize, Mat& cameraMatrix, Mat& distCoeffs,
 	vector<vector<Point2f> > imagePoints, vector<Mat>& rvecs, vector<Mat>& tvecs,
 	vector<float>& reprojErrs, double& totalAvgErr)
@@ -503,7 +480,7 @@ static bool runCalibration(Settings& s, Size& imageSize, Mat& cameraMatrix, Mat&
 			s.flag);
 	}
 
-	cout << "Re-projection error reported by calibrateCamera: " << rms << endl;
+	cout << "Re-projection error: " << rms << endl;
 
 	bool ok = checkRange(cameraMatrix) && checkRange(distCoeffs);
 
@@ -628,8 +605,6 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat& cameraMatrix, Mat& 
 
 	bool ok = runCalibration(s, imageSize, cameraMatrix, distCoeffs, imagePoints, rvecs, tvecs, reprojErrs,
 		totalAvgErr);
-	cout << (ok ? "Calibration succeeded" : "Calibration failed")
-		<< ". avg re projection error = " << totalAvgErr << endl;
 
 	if (ok)
 		saveCameraParams(s, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, reprojErrs, imagePoints,
