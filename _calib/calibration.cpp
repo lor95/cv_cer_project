@@ -375,10 +375,15 @@ double _calibration_init( )
 }
 
 static double get_focal_length(Settings& s) {
-	FileStorage fs(s.outputFileName, FileStorage::READ);
-	Mat cameraMatrix;
-	fs["camera_matrix"]>>cameraMatrix;
-	return cameraMatrix.at<double>(0, 0);
+	try {
+		FileStorage fs(s.outputFileName, FileStorage::READ);
+		Mat cameraMatrix;
+		fs["camera_matrix"] >> cameraMatrix;
+		return cameraMatrix.at<double>(0, 0);
+	}
+	catch (...) {
+		return 560; // default focal length
+	}
 }
 
 //! [compute_errors]
