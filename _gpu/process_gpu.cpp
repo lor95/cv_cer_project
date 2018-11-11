@@ -5,6 +5,7 @@
 #include "opencv2/cudawarping.hpp"
 #include "opencv2/cudaarithm.hpp"
 #include <opencv2/core/cuda.hpp>
+#include <time.h>
 #include <iostream>
 #include <iomanip>
 
@@ -27,6 +28,8 @@ GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_ca
 }
 
 GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gpu) {
+	clock_t t0 = clock(); ///////////// spostare nel main.cpp
+
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
 		pos.erase(pos.begin()); // delete first point in trajectory
 	}
@@ -96,6 +99,10 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	}
 	putText(frame, target_position.str(),
 		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.45, info_color); // position info
+	double t1 = clock() - t0;
+	ostringstream time;
+	time << "Execution time: " << t1 << "ms";
+	putText(frame, time.str(), Point2f(10, 115), FONT_HERSHEY_DUPLEX, 0.55, Scalar(0, 255, 255));
 	frame_gpu.upload(frame);
 	return frame_gpu;
 }

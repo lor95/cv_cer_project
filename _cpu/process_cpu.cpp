@@ -2,6 +2,7 @@
 #include <opencv2/imgproc.hpp>
 #include <sstream>
 #include <iostream>
+#include <time.h>
 
 #include "process_cpu.h"
 
@@ -20,6 +21,9 @@ Mat process_cpu(Mat mainframe, CascadeClassifier target_cascade) {
 }
 
 Mat main_logic_cpu(Mat frame, CascadeClassifier cascade) {
+
+	clock_t t0 = clock(); ///////////// spostare nel main.cpp
+
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
 		pos.erase(pos.begin()); // delete first point in trajectory
 	}
@@ -77,5 +81,9 @@ Mat main_logic_cpu(Mat frame, CascadeClassifier cascade) {
 	}
 	putText(frame, target_position.str(),
 		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.45, info_color); // position info
+	double t1 = clock() - t0;
+	ostringstream time;
+	time << "Execution time: " << t1 << "ms";
+	putText(frame, time.str(), Point2f(10, 115), FONT_HERSHEY_DUPLEX, 0.55, Scalar(0, 255, 255));
 	return frame;
 }

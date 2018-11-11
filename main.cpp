@@ -34,7 +34,7 @@ int main(int argc, const char** argv) {
 		return 1;
 	}
 
-	fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xxl"; // xml has to be in "<executable>/_data/"
+	fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
 	CommandLineParser parser_gpu(argc, argv, // gpu
 		"{help h||}"
 		"{target_cascade_gpu|" + fs::system_complete(n).string() + "|}");
