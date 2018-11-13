@@ -2,6 +2,7 @@
 #include <opencv2/imgproc.hpp>
 #include <sstream>
 #include <iostream>
+#include <time.h>
 
 #include "process_cpu.h"
 
@@ -20,7 +21,12 @@ Mat process_cpu( Mat mainframe, CascadeClassifier target_cascade, double focal_l
 }
 
 Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, double r_width) {
-
+	
+	
+	clock_t t0 = clock(); ///////////// spostare nel main.cpp
+	
+	
+	
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
 		pos.erase(pos.begin()); // delete first point in trajectory
 	}
@@ -42,7 +48,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, 
 		Point center( targets[j].x + targets[j].width/2, targets[j].y + targets[j].height/2 );
 		centers.push_back(center);
 		rectangle(frame, Size(targets[j].x + targets[j].width, targets[j].y + targets[j].height),
-			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 1, 8, 0); // draw target
+			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw target
 		if(i == 1) { // only 1 target is tracked
 			pos.push_back(centers[j]);
 			target = j;
@@ -53,7 +59,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, 
 		double dist = norm(last_tr - centers[0]); // distance between latest tr and centers tracked
 		size_t index = 0;
 		for (size_t j = 1; j < i; j++) {
-			if (norm(last_tr - centers[j]) < dist) {
+			if (norm(last_tr - centers[j]) <= dist) {
 				dist = norm(last_tr - centers[j]);
 				index = j;
 			}
@@ -70,25 +76,27 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, 
 		pos.clear();
 	}
 	ostringstream dst;
+	ostringstream target_position;	
+	double _z;
 	//calculate distance;
 	if (!targets.empty()) {
-		double distance = (focal_length * r_width) / (targets[target].width * 10);
-		dst << "Distance: " << distance << "cm";
+		double distance = (focal_length * r_width) / (targets[target].width);
+		dst << "Distance: " << (distance / 10) << "cm";
+		_z =  distance - 500; // z is 0 when distance = 500 mm
 	}
 	// write frame data
-	ostringstream target_position;
 	Scalar info_color;
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
-		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "}";
-	}
-	else {
-		info_color = Scalar(0, 0, 255);
-		target_position << "No target is tracked.";
+		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = " << (int)_z << "}";
 	}
 	putText(frame, target_position.str(),
-		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.45, info_color); // position info
+		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
 	putText(frame, dst.str(),
-		Point2f(10, 95), FONT_HERSHEY_DUPLEX, 0.7, Scalar(0, 255, 0)); // position info
+		Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
+	double t1 = clock() - t0;
+	ostringstream time;
+	time << "Execution time: " << t1 << "ms";
+	putText(frame, time.str(), Point2f(10, 115), FONT_HERSHEY_DUPLEX, 0.55, Scalar(0, 255, 255));
 	return frame;
 }
