@@ -48,7 +48,7 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, 
 		Point center( targets[j].x + targets[j].width/2, targets[j].y + targets[j].height/2 );
 		centers.push_back(center);
 		rectangle(frame, Size(targets[j].x + targets[j].width, targets[j].y + targets[j].height),
-			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 1, 8, 0); // draw target
+			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw target
 		if(i == 1) { // only 1 target is tracked
 			pos.push_back(centers[j]);
 			target = j;
@@ -89,10 +89,6 @@ Mat main_logic_cpu ( Mat frame, CascadeClassifier cascade, double focal_length, 
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
 		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = " << (int)_z << "}";
-	}
-	else {
-		info_color = Scalar(0, 0, 255);
-		target_position << "No target is tracked.";
 	}
 	putText(frame, target_position.str(),
 		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
