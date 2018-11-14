@@ -18,16 +18,17 @@ using namespace cv::cuda;
 static std::vector<Point> pos;
 static int fail_counter = 0;
 
-GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu);
-GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gpu);
+GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu, double focal_length, double r_width);
+GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gpu, double focal_length, double r_width);
 
-GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu) {
+GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu, double focal_length, double r_width) {
 	putText(mainframe, "USING: GPU", Point2f(10, 20), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255, 255));
 	//cv::cuda::printShortCudaDeviceInfo(cv::cuda::getCudaEnabledDeviceCount());
-	return main_logic_gpu(mainframe, target_cascade_gpu);
+	return main_logic_gpu(mainframe, target_cascade_gpu, focal_length, r_width);
 }
 
-GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gpu) {
+GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gpu, double focal_length, double r_width) {
+
 	clock_t t0 = clock(); ///////////// spostare nel main.cpp
 
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
@@ -35,8 +36,7 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	}
 	std::vector<Rect> targets; // target matrixes
 	std::vector<Point> centers; // target centers
-	std::vector<Point> dist_arr;
-	std::vector<Point> distj_arr;
+	size_t target = 0; // index of the target
 	GpuMat frame_gpu(frame);
 	GpuMat fgray;
 	GpuMat objbuf;
@@ -57,22 +57,19 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 		Point center(targets[j].x + targets[j].width / 2, targets[j].y + targets[j].height / 2);
 		centers.push_back(center);
 		rectangle(frame, Size(targets[j].x + targets[j].width, targets[j].y + targets[j].height),
-			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 1, 8, 0); // draw target
+			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw target
 		if (i == 1) { // only 1 target is tracked
 			pos.push_back(centers[j]);
+			target = j;
 		}
 	}
 	if (i > 1 && !pos.empty()) { // if more than a target is tracked insert the more probable center in trajectory
 		Point last_tr = Point(pos[pos.size() - 1].x, pos[pos.size() - 1].y);
-		dist_arr.push_back(last_tr);
-		dist_arr.push_back(centers[0]);
-		double dist = cv::cuda::norm(dist_arr, NORM_L2); // distance between latest tr and centers tracked
+		double dist = norm(last_tr - centers[0]); // distance between latest tr and centers tracked
 		size_t index = 0;
 		for (size_t j = 1; j < i; j++) {
-			distj_arr.push_back(last_tr);
-			distj_arr.push_back(centers[j]);
-			if (cv::cuda::norm(distj_arr, NORM_L2) < dist) {
-				dist = cv::cuda::norm(distj_arr, NORM_L2);
+			if (norm(last_tr - centers[j]) <= dist) {
+				dist = norm(last_tr - centers[j]);
 				index = j;
 			}
 		}
@@ -86,19 +83,34 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	else {
 		pos.clear();
 	}
+	if (fail_counter <= 15) {
+		for (size_t j = 1; j < pos.size(); j++) {
+			line(frame, pos[j], pos[j - 1], Scalar(0, 255, 150), 2, 8, 0); // draw trajectory
+		}
+	}
+	else {
+		pos.clear();
+	}
 	// write frame data
+	ostringstream dst;
 	ostringstream target_position;
+	double _z;
+	//calculate distance;
+	if (!targets.empty()) {
+		double distance = (focal_length * r_width) / (targets[target].width);
+		dst << "Distance: " << (distance / 10) << "cm";
+		_z = distance - 500; // z is 0 when distance = 500 mm
+	}
+	// write frame data
 	Scalar info_color;
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
-		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = ???}";
-	}
-	else {
-		info_color = Scalar(0, 0, 255);
-		target_position << "No target is tracked.";
+		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = " << (int)_z << "}";
 	}
 	putText(frame, target_position.str(),
-		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.45, info_color); // position info
+		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
+	putText(frame, dst.str(),
+		Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
 	double t1 = clock() - t0;
 	ostringstream time;
 	time << "Execution time: " << t1 << "ms";
