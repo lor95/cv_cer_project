@@ -3,4 +3,4 @@
 
 using namespace cv;
 
-double _calibration_init( );
+double _calibration_init();

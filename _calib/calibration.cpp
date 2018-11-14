@@ -119,7 +119,9 @@ public:
 			goodInput = false;
 		}
 
-		flag = 0;
+		///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+
+		/*flag = 0;
 		if (calibFixPrincipalPoint) flag |= CALIB_FIX_PRINCIPAL_POINT;
 		if (calibZeroTangentDist)   flag |= CALIB_ZERO_TANGENT_DIST;
 		if (aspectRatio)            flag |= CALIB_FIX_ASPECT_RATIO;
@@ -136,7 +138,21 @@ public:
 			if (fixK2)                   flag |= fisheye::CALIB_FIX_K2;
 			if (fixK3)                   flag |= fisheye::CALIB_FIX_K3;
 			if (fixK4)                   flag |= fisheye::CALIB_FIX_K4;
-			if (calibFixPrincipalPoint) flag |= fisheye::CALIB_FIX_PRINCIPAL_POINT;
+			if (calibFixPrincipalPoint)  flag |= fisheye::CALIB_FIX_PRINCIPAL_POINT;
+		}*/
+
+		///////////////////////////////////////////////////////////////////////////////
+
+		flag = CALIB_FIX_K4 | CALIB_FIX_K5;
+		if (calibFixPrincipalPoint) flag |= CALIB_FIX_PRINCIPAL_POINT;
+		if (calibZeroTangentDist)   flag |= CALIB_ZERO_TANGENT_DIST;
+		if (aspectRatio)            flag |= CALIB_FIX_ASPECT_RATIO;
+
+		if (useFisheye) {
+			// the fisheye model has its own enum, so overwrite the flags
+			flag = fisheye::CALIB_FIX_SKEW | fisheye::CALIB_RECOMPUTE_EXTRINSIC |
+				// fisheye::CALIB_FIX_K1 |
+				fisheye::CALIB_FIX_K2 | fisheye::CALIB_FIX_K3 | fisheye::CALIB_FIX_K4;
 		}
 
 		calibrationPattern = NOT_EXISTING;
@@ -375,15 +391,13 @@ double _calibration_init( )
 }
 
 static double get_focal_length(Settings& s) {
-	try {
 		FileStorage fs(s.outputFileName, FileStorage::READ);
+		if (!fs.isOpened()) {
+			return 560;
+		}
 		Mat cameraMatrix;
 		fs["camera_matrix"] >> cameraMatrix;
-		return cameraMatrix.at<double>(0, 0);
-	}
-	catch (...) {
-		return 560; // default focal length
-	}
+		return cameraMatrix.at<double>(1, 1);
 }
 
 //! [compute_errors]
@@ -514,7 +528,9 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	if (s.flag & CALIB_FIX_ASPECT_RATIO)
 		fs << "fix_aspect_ratio" << s.aspectRatio;
 
-	if (s.flag)
+	///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+
+	/*if (s.flag)
 	{
 		std::stringstream flagsStringStream;
 		if (s.useFisheye)
@@ -541,6 +557,32 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 				<< (s.flag & CALIB_FIX_K5 ? " +fix_k5" : "");
 		}
 		fs.writeComment(flagsStringStream.str());
+	}*/
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	char buf[1024];
+	if (s.flag)
+	{
+		if (s.useFisheye)
+		{
+			sprintf_s(buf, "flags:%s%s%s%s%s%s",
+				s.flag & fisheye::CALIB_FIX_SKEW ? " +fix_skew" : "",
+				s.flag & fisheye::CALIB_FIX_K1 ? " +fix_k1" : "",
+				s.flag & fisheye::CALIB_FIX_K2 ? " +fix_k2" : "",
+				s.flag & fisheye::CALIB_FIX_K3 ? " +fix_k3" : "",
+				s.flag & fisheye::CALIB_FIX_K4 ? " +fix_k4" : "",
+				s.flag & fisheye::CALIB_RECOMPUTE_EXTRINSIC ? " +recompute_extrinsic" : "");
+		}
+		else
+		{
+			sprintf_s(buf, "flags:%s%s%s%s",
+				s.flag & CALIB_USE_INTRINSIC_GUESS ? " +use_intrinsic_guess" : "",
+				s.flag & CALIB_FIX_ASPECT_RATIO ? " +fix_aspectRatio" : "",
+				s.flag & CALIB_FIX_PRINCIPAL_POINT ? " +fix_principal_point" : "",
+				s.flag & CALIB_ZERO_TANGENT_DIST ? " +zero_tangent_dist" : "");
+		}
+		cvWriteComment(*fs, buf, 0);
 	}
 
 	fs << "flags" << s.flag;
@@ -554,7 +596,9 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	if (s.writeExtrinsics && !reprojErrs.empty())
 		fs << "per_view_reprojection_errors" << Mat(reprojErrs);
 
-	if (s.writeExtrinsics && !rvecs.empty() && !tvecs.empty())
+	///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+
+	/*if (s.writeExtrinsics && !rvecs.empty() && !tvecs.empty())
 	{
 		CV_Assert(rvecs[0].type() == tvecs[0].type());
 		Mat bigmat((int)rvecs.size(), 6, CV_MAKETYPE(rvecs[0].type(), 1));
@@ -583,7 +627,26 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 				t = tvecs[i].t();
 			}
 		}
-		fs.writeComment("a set of 6-tuples (rotation vector + translation vector) for each view");
+		fs.writeComment("a set of 6-tuples (rotation vector + translation vector) for each view");*/
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	if (s.writeExtrinsics && !rvecs.empty() && !tvecs.empty())
+	{
+		CV_Assert(rvecs[0].type() == tvecs[0].type());
+		Mat bigmat((int)rvecs.size(), 6, rvecs[0].type());
+		for (size_t i = 0; i < rvecs.size(); i++)
+		{
+			Mat r = bigmat(Range(int(i), int(i + 1)), Range(0, 3));
+			Mat t = bigmat(Range(int(i), int(i + 1)), Range(3, 6));
+
+			CV_Assert(rvecs[i].rows == 3 && rvecs[i].cols == 1);
+			CV_Assert(tvecs[i].rows == 3 && tvecs[i].cols == 1);
+			//*.t() is MatExpr (not Mat) so we can use assignment operator
+			r = rvecs[i].t();
+			t = tvecs[i].t();
+		}
+		//cvWriteComment( *fs, "a set of 6-tuples (rotation vector + translation vector) for each view", 0 );
 		fs << "extrinsic_parameters" << bigmat;
 	}
 

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/core/cuda.hpp>
 #include <filesystem>
 
 #include "_cpu\process_cpu.h"
@@ -15,21 +16,24 @@
 #define W 190 //mm for face
 
 using namespace cv;
+using namespace cv::cuda;
 using namespace std;
 namespace fs = std::tr2::sys;
 
 bool calib_out_bool = false;
 double focal_length;
-static CascadeClassifier target_cascade;
+static cv::CascadeClassifier target_cascade;
+static cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu;
 
 int main( int argc, const char** argv ) {	
-
 	cout << "CV_CER_PROJECT.\n\n";
 
 	string data_path = "_data";
 	ostringstream elem;
-	for (auto & p : fs::directory_iterator(data_path)) { // look inside "_data" directory
-		elem << p;
+	for (auto p = fs::directory_iterator(data_path); p != fs::directory_iterator(); ++p) { // look inside "_data" directory
+	//for (auto &p : fs::directory_iterator(data_path)) { // look inside "_data" directory
+		elem << &p;
+		//elem << p;
 		if (elem.str().find("calibration_output.xml") != string::npos) {
 			calib_out_bool = true; // if calibration_output.xml is found
 		}
@@ -50,6 +54,7 @@ int main( int argc, const char** argv ) {
 	cout << "focal length is: " << focal_length << endl;
 	
 	Mat mainframe; // main frame from camera
+	GpuMat mainframe_gpu; // main frame from camera
 	VideoCapture capture(0); // open the first camera
 	if (!capture.isOpened()) {
 		cerr << "ERROR: Can't initialize camera capture." << endl;
@@ -64,6 +69,21 @@ int main( int argc, const char** argv ) {
 		"{target_cascade|" + fs::system_complete(p).string() + "|}");
 	String target_cascade_name = parser.get<string>("target_cascade");
 	if (!target_cascade.load(target_cascade_name)) { // load the cascade
+		cerr << "ERROR: Can't load target cascade." << endl;
+		return 1;
+	}
+
+	fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
+	CommandLineParser parser_gpu(argc, argv, // gpu
+		"{help h||}"
+		"{target_cascade_gpu|" + fs::system_complete(n).string() + "|}");
+	String target_cascade_gpu_name = parser_gpu.get<string>("target_cascade_gpu");
+	try
+	{
+		target_cascade_gpu = cv::cuda::CascadeClassifier::create(target_cascade_gpu_name); // load the cascade
+	}
+	catch (std::exception& e) //catches all types of exceptions, but will print an error if the cascade above fails to load
+	{
 		cerr << "ERROR: Can't load target cascade." << endl;
 		return 1;
 	}
@@ -86,15 +106,16 @@ int main( int argc, const char** argv ) {
 			cerr << "ERROR: Can't grab camera frame." << endl;
 			return 3;
 		}
-
 		if (!sw) { // code for CPU
-			mainframe = process_cpu( mainframe, target_cascade, focal_length, W);
-			imshow("window_name", mainframe); // display frame
+			namedWindow("cpu_window", WINDOW_AUTOSIZE);
+			mainframe = process_cpu(mainframe, target_cascade, focal_length, W);
+			imshow("cpu_window", mainframe); // display frame
 		}
 		else { // code for GPU
-			sw = !sw;
-			mainframe = process_gpu( mainframe, target_cascade );
-			imshow("window_name", mainframe); // display frame (not processed yet)
+			namedWindow("gpu_window", WINDOW_OPENGL);
+			resizeWindow("gpu_window", 640, 480);
+			mainframe_gpu = process_gpu(mainframe, target_cascade_gpu, focal_length, W);
+			imshow("gpu_window", mainframe_gpu); // display frame
 		}
 	}
 	return 0;
