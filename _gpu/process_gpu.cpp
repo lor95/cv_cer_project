@@ -1,13 +1,10 @@
-#include "opencv2/objdetect.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/cudaobjdetect.hpp"
-#include "opencv2/cudaimgproc.hpp"
-#include "opencv2/cudawarping.hpp"
-#include "opencv2/cudaarithm.hpp"
-#include <opencv2/core/cuda.hpp>
-#include <time.h>
 #include <iostream>
-#include <iomanip>
+#include <time.h>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/cudaobjdetect.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/core/cuda.hpp>
 
 #include "process_gpu.h"
 
@@ -43,7 +40,7 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	cv::cuda::cvtColor(frame_gpu, fgray, COLOR_BGR2GRAY);
 	cv::cuda::equalizeHist(fgray, fgray);
 	cascade_gpu->setScaleFactor(1.1);
-	cascade_gpu->setMinNeighbors(2);
+	cascade_gpu->setMinNeighbors(5);
 	cascade_gpu->setMinObjectSize(cv::Size(30, 30));
 	cascade_gpu->detectMultiScale(fgray, objbuf); // detect targets and store them in objects buffer (rectangles)  NOTE: Cuda detectMultiScale has only one form, without the confidence levels return
 	cascade_gpu->convert(objbuf, targets);  // convert objects array from internal representation to standard vector 'targets'

@@ -1,8 +1,7 @@
-#include <opencv2/objdetect.hpp>
-#include <opencv2/imgproc.hpp>
-#include <sstream>
 #include <iostream>
 #include <time.h>
+#include <opencv2/objdetect.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include "process_cpu.h"
 
@@ -33,7 +32,7 @@ Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, d
 	Mat fgray;
 	cvtColor( frame, fgray, COLOR_BGR2GRAY );
 	equalizeHist( fgray, fgray );
-	cascade.detectMultiScale( fgray, targets, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(30, 30) ); // detect targets
+	cascade.detectMultiScale( fgray, targets, 1.1, 5, 0, Size(30, 30) ); // detect targets
 	size_t i = targets.size();
 	if (i == 0) {
 		fail_counter++; // increment

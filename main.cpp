@@ -1,23 +1,23 @@
 // this is the master file. It initializes the project 
 #include <iostream>
 #include <sstream>
+#include <filesystem>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/cuda.hpp>
-#include <filesystem>
+#include <opencv2/cudacodec.hpp>
 
-#include "_cpu\process_cpu.h"
-#include "_gpu\process_gpu.h"
-#include "_calib\calibration.h"
+#include "_cpu/process_cpu.h"
+#include "_gpu/process_gpu.h"
+#include "_calib/calibration.h"
 
 #define SWITCH 32 // space
 #define EXIT 27 // esc
+#define W 75 //mm for target object
 
-#define W 190 //mm for face
-
+using namespace std;
 using namespace cv;
 using namespace cv::cuda;
-using namespace std;
 namespace fs = std::tr2::sys;
 
 bool calib_out_bool = false;
@@ -25,7 +25,7 @@ double focal_length;
 static cv::CascadeClassifier target_cascade;
 static cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu;
 
-int main( int argc, const char** argv ) {	
+int main( int argc, const char** argv ) {
 	cout << "CV_CER_PROJECT.\n\n";
 
 	string data_path = "_data";
@@ -41,17 +41,15 @@ int main( int argc, const char** argv ) {
 	}
 
 	if (calib_out_bool) {
-		cout << "calibration_output.xml has been found.\n\nOpening camera...\n\n";
+		cout << "FILE: \"calibration_output.xml\" has been found.\n\nOpening camera...\n\n";
 		cout << "CALIBRATION OPTIONS : Press 'c' to RECALIBRATE, 'n' to continue.\n\n";
 	}
 	else {
-		cout << "calibration_output.xml has not been found.\n\nOpening camera...\n\n";
+		cout << "FILE: \"calibration_output.xml\" has not been found.\n\nOpening camera...\n\n";
 		cout << "CALIBRATION OPTIONS : Press 'c' to CALIBRATE, 'n' to continue.\n\n";
 	}
 
 	focal_length = _calibration_init();
-
-	cout << "focal length is: " << focal_length << endl;
 	
 	Mat mainframe; // main frame from camera
 	GpuMat mainframe_gpu; // main frame from camera
@@ -61,9 +59,12 @@ int main( int argc, const char** argv ) {
 		return 2;
 	}
 
+	int width = (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
+	int height = (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 
-	fs::path p = "_data\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
+	fs::path p = "_data\\cascade.xml"; // xml has to be in "<executable>/_data/"
 	CommandLineParser parser(argc, argv, // cpu
 		"{help h||}"
 		"{target_cascade|" + fs::system_complete(p).string() + "|}");
@@ -73,16 +74,16 @@ int main( int argc, const char** argv ) {
 		return 1;
 	}
 
-	fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
+	//fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
 	CommandLineParser parser_gpu(argc, argv, // gpu
 		"{help h||}"
-		"{target_cascade_gpu|" + fs::system_complete(n).string() + "|}");
+		"{target_cascade_gpu|" + fs::system_complete(p).string() + "|}");
 	String target_cascade_gpu_name = parser_gpu.get<string>("target_cascade_gpu");
 	try
 	{
 		target_cascade_gpu = cv::cuda::CascadeClassifier::create(target_cascade_gpu_name); // load the cascade
 	}
-	catch (std::exception& e) //catches all types of exceptions, but will print an error if the cascade above fails to load
+	catch (...) //catches all types of exceptions, but will print an error if the cascade above fails to load
 	{
 		cerr << "ERROR: Can't load target cascade." << endl;
 		return 1;
@@ -97,6 +98,7 @@ int main( int argc, const char** argv ) {
 			break; //if key = ESC exit
 		}
 		if (k == SWITCH) {
+			//destroyAllWindows();
 			sw = !sw;
 		}
 
@@ -107,13 +109,14 @@ int main( int argc, const char** argv ) {
 			return 3;
 		}
 		if (!sw) { // code for CPU
-			namedWindow("cpu_window", WINDOW_AUTOSIZE);
+			namedWindow("cpu_window", WINDOW_NORMAL);
+			resizeWindow("cpu_window", width, height);
 			mainframe = process_cpu(mainframe, target_cascade, focal_length, W);
 			imshow("cpu_window", mainframe); // display frame
 		}
 		else { // code for GPU
 			namedWindow("gpu_window", WINDOW_OPENGL);
-			resizeWindow("gpu_window", 640, 480);
+			resizeWindow("gpu_window", width, height);
 			mainframe_gpu = process_gpu(mainframe, target_cascade_gpu, focal_length, W);
 			imshow("gpu_window", mainframe_gpu); // display frame
 		}
