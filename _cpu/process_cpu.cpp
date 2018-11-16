@@ -31,8 +31,8 @@ Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, d
 	size_t target = 0; // index of the target
 	Mat fgray;
 	cvtColor( frame, fgray, COLOR_BGR2GRAY );
-	equalizeHist( fgray, fgray );
-	cascade.detectMultiScale( fgray, targets, 1.1, 5, 0, Size(30, 30) ); // detect targets
+	equalizeHist(fgray, fgray);
+	cascade.detectMultiScale(fgray, targets, 1.1, 5, 0, Size(30, 30)); // detect targets
 	size_t i = targets.size();
 	if (i == 0) {
 		fail_counter++; // increment
@@ -40,7 +40,7 @@ Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, d
 	}
 	for (size_t j = 0; j < i; j++ ) { // draw targets on frame
 		fail_counter = 0; // reset
-		Point center( targets[j].x + targets[j].width/2, targets[j].y + targets[j].height/2 );
+		Point center(targets[j].x + targets[j].width/2, targets[j].y + targets[j].height/2);
 		centers.push_back(center);
 		rectangle(frame, Size(targets[j].x + targets[j].width, targets[j].y + targets[j].height),
 			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw target

@@ -5,7 +5,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/cuda.hpp>
-#include <opencv2/cudacodec.hpp>
 
 #include "_cpu/process_cpu.h"
 #include "_gpu/process_gpu.h"
@@ -65,7 +64,7 @@ int main( int argc, const char** argv ) {
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 
 	fs::path p = "_data\\cascade.xml"; // xml has to be in "<executable>/_data/"
-	CommandLineParser parser(argc, argv, // cpu
+	CommandLineParser parser(argc, argv, // cpu parser
 		"{help h||}"
 		"{target_cascade|" + fs::system_complete(p).string() + "|}");
 	String target_cascade_name = parser.get<string>("target_cascade");
@@ -75,7 +74,7 @@ int main( int argc, const char** argv ) {
 	}
 
 	//fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
-	CommandLineParser parser_gpu(argc, argv, // gpu
+	CommandLineParser parser_gpu(argc, argv, // gpu parser
 		"{help h||}"
 		"{target_cascade_gpu|" + fs::system_complete(p).string() + "|}");
 	String target_cascade_gpu_name = parser_gpu.get<string>("target_cascade_gpu");

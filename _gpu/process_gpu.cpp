@@ -20,7 +20,6 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 
 GpuMat process_gpu(Mat mainframe, cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu, double focal_length, double r_width) {
 	putText(mainframe, "USING: GPU", Point2f(10, 20), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255, 255));
-	//cv::cuda::printShortCudaDeviceInfo(cv::cuda::getCudaEnabledDeviceCount());
 	return main_logic_gpu(mainframe, target_cascade_gpu, focal_length, r_width);
 }
 
@@ -34,16 +33,15 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	std::vector<Rect> targets; // target matrixes
 	std::vector<Point> centers; // target centers
 	size_t target = 0; // index of the target
-	GpuMat frame_gpu(frame);
+	GpuMat frame_gpu(frame); // transferring data from system memory to gpu memory
 	GpuMat fgray;
-	GpuMat objbuf;
 	cv::cuda::cvtColor(frame_gpu, fgray, COLOR_BGR2GRAY);
 	cv::cuda::equalizeHist(fgray, fgray);
 	cascade_gpu->setScaleFactor(1.1);
 	cascade_gpu->setMinNeighbors(5);
 	cascade_gpu->setMinObjectSize(cv::Size(30, 30));
-	cascade_gpu->detectMultiScale(fgray, objbuf); // detect targets and store them in objects buffer (rectangles)  NOTE: Cuda detectMultiScale has only one form, without the confidence levels return
-	cascade_gpu->convert(objbuf, targets);  // convert objects array from internal representation to standard vector 'targets'
+	cascade_gpu->detectMultiScale(fgray, fgray); // detect targets and store them in objects buffer (rectangles)  NOTE: Cuda detectMultiScale has only one form, without the confidence levels return
+	cascade_gpu->convert(fgray, targets);  // convert objects array from internal representation to standard vector 'targets'
 	size_t i = targets.size();
 	if (i == 0) {
 		fail_counter++; // increment

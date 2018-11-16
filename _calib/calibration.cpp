@@ -158,16 +158,14 @@ public:
 		if (!patternToUse.compare("CHESSBOARD")) calibrationPattern = CHESSBOARD;
 		if (!patternToUse.compare("CIRCLES_GRID")) calibrationPattern = CIRCLES_GRID;
 		if (!patternToUse.compare("ASYMMETRIC_CIRCLES_GRID")) calibrationPattern = ASYMMETRIC_CIRCLES_GRID;
-		if (calibrationPattern == NOT_EXISTING)
-		{
+		if (calibrationPattern == NOT_EXISTING) {
 			cerr << " Camera calibration mode does not exist: " << patternToUse << endl;
 			goodInput = false;
 		}
 		atImageList = 0;
 
 	}
-	Mat nextImage()
-	{
+	Mat nextImage() {
 		Mat result;
 		if (inputCapture.isOpened())
 		{
@@ -181,8 +179,7 @@ public:
 		return result;
 	}
 
-	static bool readStringList(const string& filename, vector<string>& l)
-	{
+	static bool readStringList(const string& filename, vector<string>& l) {
 		l.clear();
 		FileStorage fs(filename, FileStorage::READ);
 		if (!fs.isOpened())
@@ -196,8 +193,7 @@ public:
 		return true;
 	}
 
-	static bool isListOfImages(const string& filename)
-	{
+	static bool isListOfImages(const string& filename) {
 		string s(filename);
 		// Look for file extension
 		if (s.find(".xml") == string::npos && s.find(".yaml") == string::npos && s.find(".yml") == string::npos)
@@ -237,8 +233,7 @@ private:
 	string patternToUse;
 };
 
-static inline void read(const FileNode& node, Settings& x, const Settings& default_value = Settings())
-{
+static inline void read(const FileNode& node, Settings& x, const Settings& default_value = Settings()) {
 	if (node.empty())
 		x = default_value;
 	else
@@ -253,8 +248,7 @@ bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat&
 double _calibration_init( );
 double get_focal_length(Settings& s);
 
-double _calibration_init( )
-{
+double _calibration_init( ) {
 	double ret;
 	Settings s;
 	const string inputSettingsFile = "_data\\calibration_input.xml";
@@ -277,8 +271,7 @@ double _calibration_init( )
 		view = s.nextImage();
 
 		//-----  If no more image, or got enough, then stop calibration and show result -------------
-		if (mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames)
-		{
+		if (mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames) {
 			if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints)) 
 				mode = CALIBRATED;
 			else
