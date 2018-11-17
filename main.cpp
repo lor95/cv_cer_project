@@ -30,9 +30,7 @@ int main( int argc, const char** argv ) {
 	string data_path = "_data";
 	ostringstream elem;
 	for (auto p = fs::directory_iterator(data_path); p != fs::directory_iterator(); ++p) { // look inside "_data" directory
-	//for (auto &p : fs::directory_iterator(data_path)) { // look inside "_data" directory
 		elem << &p;
-		//elem << p;
 		if (elem.str().find("calibration_output.xml") != string::npos) {
 			calib_out_bool = true; // if calibration_output.xml is found
 		}
@@ -64,6 +62,7 @@ int main( int argc, const char** argv ) {
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 
 	fs::path p = "_data\\cascade.xml"; // xml has to be in "<executable>/_data/"
+
 	CommandLineParser parser(argc, argv, // cpu parser
 		"{help h||}"
 		"{target_cascade|" + fs::system_complete(p).string() + "|}");
@@ -73,7 +72,6 @@ int main( int argc, const char** argv ) {
 		return 1;
 	}
 
-	//fs::path n = "_data\\haarcascades_cuda\\haarcascade_frontalface_default.xml"; // xml has to be in "<executable>/_data/"
 	CommandLineParser parser_gpu(argc, argv, // gpu parser
 		"{help h||}"
 		"{target_cascade_gpu|" + fs::system_complete(p).string() + "|}");
@@ -97,7 +95,6 @@ int main( int argc, const char** argv ) {
 			break; //if key = ESC exit
 		}
 		if (k == SWITCH) {
-			//destroyAllWindows();
 			sw = !sw;
 		}
 
