@@ -11,17 +11,14 @@ using namespace cv;
 static std::vector<Point> pos;
 static int fail_counter = 0;
 
-Mat process_cpu(Mat mainframe, CascadeClassifier target_cascade, double focal_length, double r_width);
 Mat main_logic_cpu(Mat frame, CascadeClassifier cascade, double focal_length, double r_width);
 
-Mat process_cpu(Mat mainframe, CascadeClassifier target_cascade, double focal_length, double r_width) {
-	putText(mainframe, "USING: CPU", Point2f(10, 20), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255, 255));
-	return main_logic_cpu (mainframe, target_cascade, focal_length, r_width);
-}
 
 Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, double r_width) {
 
-	clock_t t0 = clock(); ///////////// spostare nel main.cpp
+	clock_t t0 = clock();
+
+	putText(frame, "USING: CPU", Point2f(10, 20), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255, 255));
 
 	if (pos.size() >= 30) { // max number of points evaluated in trajectory
 		pos.erase(pos.begin()); // delete first point in trajectory
@@ -30,7 +27,7 @@ Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, d
 	std::vector<Point> centers; // target centers
 	size_t target = 0; // index of the target
 	Mat fgray;
-	cvtColor( frame, fgray, COLOR_BGR2GRAY );
+	cvtColor(frame, fgray, COLOR_BGR2GRAY);
 	equalizeHist(fgray, fgray);
 	cascade.detectMultiScale(fgray, targets, 1.1, 5, 0, Size(30, 30)); // detect targets
 	size_t i = targets.size();

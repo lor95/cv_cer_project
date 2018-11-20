@@ -24,7 +24,7 @@ double focal_length;
 static cv::CascadeClassifier target_cascade;
 static cv::Ptr<cv::cuda::CascadeClassifier> target_cascade_gpu;
 
-int main( int argc, const char** argv ) {
+int main(int argc, const char** argv) {
 	cout << "CV_CER_PROJECT.\n\n";
 
 	string data_path = "_data";
@@ -107,13 +107,13 @@ int main( int argc, const char** argv ) {
 		if (!sw) { // code for CPU
 			namedWindow("cpu_window", WINDOW_NORMAL);
 			resizeWindow("cpu_window", width, height);
-			mainframe = process_cpu(mainframe, target_cascade, focal_length, W);
+			mainframe = main_logic_cpu(mainframe, target_cascade, focal_length, W);
 			imshow("cpu_window", mainframe); // display frame
 		}
 		else { // code for GPU
 			namedWindow("gpu_window", WINDOW_OPENGL);
 			resizeWindow("gpu_window", width, height);
-			mainframe_gpu = process_gpu(mainframe, target_cascade_gpu, focal_length, W);
+			mainframe_gpu = main_logic_gpu(mainframe, target_cascade_gpu, focal_length, W);
 			imshow("gpu_window", mainframe_gpu); // display frame
 		}
 	}
