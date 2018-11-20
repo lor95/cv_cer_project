@@ -9,7 +9,6 @@ using namespace std;
 using namespace cv;
 
 static std::vector<Point3d> pos;
-double distance;
 static int fail_counter = 0;
 
 Mat main_logic_cpu(Mat frame, CascadeClassifier cascade, double focal_length, double r_width);
@@ -87,7 +86,6 @@ Mat main_logic_cpu (Mat frame, CascadeClassifier cascade, double focal_length, d
 		dst << "Distance: " << (distance / 10) << "cm";
 		_z =  distance - 500; // z is 0 when distance = 500 mm
 	}
-	// write frame data
 	Scalar info_color;
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
