@@ -40,26 +40,26 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	cascade_gpu->detectMultiScale(fgray, fgray); // detect targets and store them in objects buffer (rectangles)  NOTE: Cuda detectMultiScale has only one form, without the confidence levels return
 	cascade_gpu->convert(fgray, targets);  // convert objects array from internal representation to standard vector 'targets'
 	size_t i = targets.size();
-	if (i == 0) {
-		fail_counter++; // increment
+	if (i == 0) { // if no target has been found
+		fail_counter++;
 		putText(frame, "No target is tracked.", Point2f(10, 45), FONT_HERSHEY_SIMPLEX, 0.6, Scalar(0, 0, 255));
 	}
-	for (size_t j = 0; j < i; j++) { // draw targets on frame
-		fail_counter = 0; // reset
+	for (size_t j = 0; j < i; j++) {
+		fail_counter = 0; // reset fail counter (targets are found)
 		Point center(targets[j].x + targets[j].width / 2, targets[j].y + targets[j].height / 2);
 		distances.push_back((focal_length * r_width) / (targets[j].width)); // calculate distance for each target
 		centers.push_back(center);
 		rectangle(frame, Size(targets[j].x + targets[j].width, targets[j].y + targets[j].height),
-			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw target
-		if (i == 1) { // only 1 target is tracked			
+			Point(targets[j].x, targets[j].y), Scalar(0, 255, 0), 2, 8, 0); // draw targets on frame
+		if (i == 1) { // if only 1 target is tracked
 			pos.push_back(Point3d(centers[j].x, centers[j].y, distances[j]));
-			target = j;
+			target = j; // (j == i == 1)
 		}
 	}
-	if (i > 1 && !pos.empty()) { // if more than a target is tracked insert the more probable center in trajectory
-		Point3d last_tr = Point3d(pos[pos.size() - 1].x, pos[pos.size() - 1].y, pos[pos.size() - 1].z);
-		double dist = norm(last_tr - Point3d(centers[0].x, centers[0].y, distances[0])); // distance between latest tr and centers tracked
-		size_t index = 0;
+	if (i > 1 && !pos.empty()) { // if more than a single target is tracked, insert the most likely position in trajectory
+		Point3d last_tr = Point3d(pos[pos.size() - 1].x, pos[pos.size() - 1].y, pos[pos.size() - 1].z); // last position in trajectory
+		double dist = norm(last_tr - Point3d(centers[0].x, centers[0].y, distances[0])); // distance between last position and centers tracked
+		size_t index = 0; // index of the target
 		for (size_t j = 1; j < i; j++) {
 			if (norm(last_tr - Point3d(centers[j].x, centers[j].y, distances[j])) <= dist) {
 				dist = norm(last_tr - Point3d(centers[j].x, centers[j].y, distances[j]));
@@ -68,30 +68,30 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 		}
 		pos.push_back(Point3d(centers[index].x, centers[index].y, distances[index]));
 	}
-	if (fail_counter <= 15) {
+	if (fail_counter <= 15) { // draw trajectory
 		for (size_t j = 1; j < pos.size(); j++) {
 			int thickness;
-			if (pos[j].z < 300) {
+			if (pos[j].z < 300) { // if 0 < distance < 29cm
 				thickness = 3;
 			}
-			else if (pos[j].z < 550) {
+			else if (pos[j].z < 550) { // if 30cm < distance < 54cm
 				thickness = 2;
 			}
-			else thickness = 1;
+			else thickness = 1; // if distance > 55cm
 			line(frame, Point(pos[j].x, pos[j].y), Point(pos[j - 1].x, pos[j - 1].y), Scalar(0, 255, 150), thickness, 8, 0); // draw trajectory
 		}
 	}
-	else {
+	else { // if in more than 15 frames no object is found, clear trajectory
 		pos.clear();
 	}
-	// write frame data
-	ostringstream dst;
-	ostringstream target_position;
-	double _z;
-	//calculate distance;
+	/** write frame data **/
+	ostringstream dst; // distance to be shown
+	ostringstream target_position; // position to be shown
+	double _z; // z axis
+
 	if (!targets.empty()) {
 		double distance = pos[pos.size() - 1].z;
-		dst << "Distance: " << (distance / 10) << "cm";
+		dst << "Distance: " << (distance / 10) << "cm"; // convert from millimeters to centimeters
 		_z = distance - 500; // z is 0 when distance = 500 mm
 	}
 	Scalar info_color;
@@ -102,11 +102,11 @@ GpuMat main_logic_gpu(Mat frame, cv::Ptr<cv::cuda::CascadeClassifier> cascade_gp
 	putText(frame, target_position.str(),
 		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
 	putText(frame, dst.str(),
-		Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
-	double t1 = clock() - t0;
+		Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // distance info
+	clock_t t1 = clock() - t0;
 	ostringstream time;
 	time << "Execution time: " << t1 << "ms";
-	putText(frame, time.str(), Point2f(10, 115), FONT_HERSHEY_DUPLEX, 0.55, Scalar(0, 255, 255));
+	putText(frame, time.str(), Point2f(10, 115), FONT_HERSHEY_DUPLEX, 0.55, Scalar(0, 255, 255)); // write exec time
 	frame_gpu.upload(frame);
 	return frame_gpu;
 }

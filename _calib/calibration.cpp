@@ -24,7 +24,7 @@ public:
 	enum Pattern { NOT_EXISTING, CHESSBOARD, CIRCLES_GRID, ASYMMETRIC_CIRCLES_GRID };
 	enum InputType { INVALID, CAMERA, VIDEO_FILE, IMAGE_LIST };
 
-	void write(FileStorage& fs) const                        //Write serialization for this class
+	void write(FileStorage& fs) const // Write serialization for this class
 	{
 		fs << "{"
 			<< "BoardSize_Width" << boardSize.width
@@ -42,7 +42,7 @@ public:
 			<< "Input" << input
 			<< "}";
 	}
-	void read(const FileNode& node)                          //Read serialization for this class
+	void read(const FileNode& node) // Read serialization for this class
 	{
 		node["BoardSize_Width"] >> boardSize.width;
 		node["BoardSize_Height"] >> boardSize.height;
@@ -85,7 +85,7 @@ public:
 			goodInput = false;
 		}
 
-		if (input.empty())      // Check for valid input
+		if (input.empty()) // Check for valid input
 			inputType = INVALID;
 		else
 		{
@@ -118,7 +118,7 @@ public:
 			goodInput = false;
 		}
 
-		///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+		///////////// Removed because not compatible with OpenCV 3.1.0 /////////////
 
 		/*flag = 0;
 		if (calibFixPrincipalPoint) flag |= CALIB_FIX_PRINCIPAL_POINT;
@@ -245,18 +245,18 @@ enum { DETECTION = 0, CAPTURING = 1, CALIBRATED = 2 };
 bool runCalibrationAndSave(Settings& s, Size imageSize, Mat&  cameraMatrix, Mat& distCoeffs,
 	vector<vector<Point2f> > imagePoints);
 
-double _calibration_init( );
+double _calibration_init();
 double get_focal_length(Settings& s);
 
-double _calibration_init( ) {
-	double ret;
+double _calibration_init() {
+	double ret; // focal length to be returned
 	Settings s;
 	const string inputSettingsFile = "_data\\calibration_input.xml";
 	FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
 	fs["Settings"] >> s;
-	fs.release();
+	fs.release(); // close filestream
 	vector<vector<Point2f> > imagePoints;
-	Mat cameraMatrix, distCoeffs;
+	Mat cameraMatrix, distCoeffs; // camera matrix, distortion coefficients
 	Size imageSize;
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	clock_t prevTimestamp = 0;
@@ -268,16 +268,16 @@ double _calibration_init( ) {
 		Mat view;
 		bool blinkOutput = false;
 
-		view = s.nextImage();
+		view = s.nextImage(); // get next image
 
 		//-----  If no more image, or got enough, then stop calibration and show result -------------
 		if (mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames) {
-			if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints)) 
+			if (runCalibrationAndSave(s, imageSize, cameraMatrix, distCoeffs, imagePoints))
 				mode = CALIBRATED;
 			else
 				mode = DETECTION;
 		}
-		if (view.empty())          // If there are no more images stop the loop
+		if (view.empty()) // If there are no more images stop the loop
 		{
 			// if calibration threshold was not reached yet, calibrate now
 			if (mode != CALIBRATED && !imagePoints.empty())
@@ -286,7 +286,7 @@ double _calibration_init( ) {
 		}
 		//! [get_input]
 
-		imageSize = view.size();  // Format input image.
+		imageSize = view.size(); // Format input image
 
 		//! [find_pattern]
 		vector<Point2f> pointBuf;
@@ -367,7 +367,7 @@ double _calibration_init( ) {
 		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
 
 		if (key == ESC_KEY) {
-			ret = get_focal_length(s);
+			ret = get_focal_length(s); // get focal length
 			break;
 		}
 
@@ -383,13 +383,13 @@ double _calibration_init( ) {
 }
 
 static double get_focal_length(Settings& s) {
-		FileStorage fs(s.outputFileName, FileStorage::READ);
-		if (!fs.isOpened()) {
-			return 560;
-		}
-		Mat cameraMatrix;
-		fs["camera_matrix"] >> cameraMatrix;
-		return cameraMatrix.at<double>(1, 1);
+	FileStorage fs(s.outputFileName, FileStorage::READ);
+	if (!fs.isOpened()) {
+		return 560; // default value
+	}
+	Mat cameraMatrix;
+	fs["camera_matrix"] >> cameraMatrix;
+	return cameraMatrix.at<double>(1, 1); // fy
 }
 
 //! [compute_errors]
@@ -430,7 +430,7 @@ static void calcBoardCornerPositions(Size boardSize, float squareSize, vector<Po
 	Settings::Pattern patternType /*= Settings::CHESSBOARD*/)
 {
 	corners.clear();
-	
+
 	switch (patternType)
 	{
 	case Settings::CHESSBOARD:
@@ -508,7 +508,7 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	double totalAvgErr)
 {
 	FileStorage fs(s.outputFileName, FileStorage::WRITE);
-	
+
 	if (!rvecs.empty() || !reprojErrs.empty())
 		fs << "nr_of_frames" << (int)std::max(rvecs.size(), reprojErrs.size());
 	fs << "image_width" << imageSize.width;
@@ -520,7 +520,7 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	if (s.flag & CALIB_FIX_ASPECT_RATIO)
 		fs << "fix_aspect_ratio" << s.aspectRatio;
 
-	///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+	///////////// Removed because not compatible with OpenCV 3.1.0 /////////////
 
 	/*if (s.flag)
 	{
@@ -588,7 +588,7 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 	if (s.writeExtrinsics && !reprojErrs.empty())
 		fs << "per_view_reprojection_errors" << Mat(reprojErrs);
 
-	///////////// Removed by Menrva, not compatible with OpenCV 3.1.0 /////////////
+	///////////// Removed because not compatible with OpenCV 3.1.0 /////////////
 
 	/*if (s.writeExtrinsics && !rvecs.empty() && !tvecs.empty())
 	{
@@ -621,7 +621,7 @@ static void saveCameraParams(Settings& s, Size& imageSize, Mat& cameraMatrix, Ma
 		}
 		fs.writeComment("a set of 6-tuples (rotation vector + translation vector) for each view");*/
 
-	///////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
 
 	if (s.writeExtrinsics && !rvecs.empty() && !tvecs.empty())
 	{
