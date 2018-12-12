@@ -80,21 +80,21 @@ Mat main_logic_cpu(Mat frame, CascadeClassifier cascade, double focal_length, do
 	ostringstream dst; // distance to be shown
 	ostringstream target_position; // position to be shown
 	double _z; // z axis
-
-	if (!targets.empty()) {
-		double distance = pos[pos.size() - 1].z;
-		dst << "Distance: " << (distance / 10) << "cm"; // convert from millimeters to centimeters
-		_z = distance - 500; // z is 0 when distance = 500 mm
-	}
+	double distance;
 	Scalar info_color;
+
 	if (!pos.empty() && i != 0) {
 		info_color = Scalar(0, 255, 255);
+		distance = pos[pos.size() - 1].z;
+		dst << "Distance: " << (distance / 10) << "cm"; // convert from millimeters to centimeters
+		_z = distance - 500; // z is 0 when distance = 500 mm
 		target_position << "Position:{x = " << pos.back().x << "; y = " << pos.back().y << "; z = " << (int)_z << "}";
+		putText(frame, target_position.str(),
+			Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
+		putText(frame, dst.str(),
+			Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // distance info
 	}
-	putText(frame, target_position.str(),
-		Point2f(10, 65), FONT_HERSHEY_DUPLEX, 0.55, info_color); // position info
-	putText(frame, dst.str(),
-		Point2f(10, 90), FONT_HERSHEY_DUPLEX, 0.55, info_color); // distance info
+
 	clock_t t1 = clock() - t0;
 	ostringstream time;
 	time << "Execution time: " << t1 << "ms";

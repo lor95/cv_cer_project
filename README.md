@@ -38,8 +38,6 @@ Not being recent systems to today's standards, especially the latter, there have
 
 ## 2. What's Behind It
 
-Magari aggiungere qlcsina in più su object detection; qlcsina sulle istruzioni SIMD della Intel (quali MMX, AVX, SSE); forse qlcsina in più su SIMT.
-
 _Object detection_ is a computer technology related to computer vision and image processing that deals with detecting instances of semantic objects of a certain class (such as humans, buildings, or cars) in digital images and videos. Every object class has its own special features that helps in classifying the class. Methods for object detection generally fall into either machine learning-based approaches or deep learning-based approaches.
 
 _Machine Learning_ is a field of artificial intelligence which uses statistical techniques to give computer systems the ability to "learn" from data (for instance, progressively improve performance on a specific task), without being explicitly programmed to do so. On the other hand, _Deep Learning_ (also known as hierarchical learning) is about learning multiple levels of representations that correspond to different levels of abstraction, the levels forming a hierarchy of concepts that help to make sense of data such as images, sound, and text. Deep Learning can also be defined as a class of algorithms that use a cascade of multiple layers of nonlinear processing units for feature extraction and transformation, where each successive layer uses the output from the previous as input; Deep Learning can be of three different kinds: supervised, semi-supervised, unsupervised. 
@@ -69,16 +67,18 @@ and an even higher number of negatives not containing our object of interest, su
 
 Next, we generated the _vector file_ of the positives using the `opencv_createsamples` application, with the following Command Prompt command and requested arguments:
 
-`opencv_createsamples -vec C:\opencv\build\x64\vc14\bin\positive_samples.vec -w 41 -h 48 -info C:\opencv\build\x64\vc14\bin\info.dat -num 410`
+```
+opencv_createsamples -vec C:\opencv\build\x64\vc14\bin\positive_samples.vec -w 41 -h 48 -info C:\opencv\build\x64\vc14\bin\info.dat -num 410
+```
 
 The `-info` argument is to be filled with a correct path to a description file of marked up images collection, which we have manually prepared. Such description file contains a list of all available positives and selected regions of interest (specified by pixels) of our object instances
 `-num` simply specifies the number of positives available for the creation of the _.vec_ file, while `w` and `h` respectively are the width and height of the cropped, gray-scale images that will reside in the .vec file.
 
 With all training data being successfully prepared, we finally trained our boosted cascade of weak classifiers with the provided _OpenCV_ tool, in order to generate the fundamental `cascade.xml` file:
 
-`opencv_traincascade -data C:\opencv\build\x64\vc14\bin\data\ -vec C:\opencv\build\x64\vc14\bin\positive_samples.vec -bg C:\opencv\build\x64\vc14\bin\info.txt
--numPos 350 -numNeg 690 -numStages 40 -precalcValBufSize 1024 -precalcIdxBufSize 1024 -numThreads 2 -stageType BOOST -featureType LBP
--w 41 -h 48 -bt GAB -minHitRate 0.995 -maxFalseAlarmRate 0.5 -weightTrimRate 0.95 -maxDepth 1 -acceptanceRatioBreakValue 0.0000412`
+```
+opencv_traincascade -data C:\opencv\build\x64\vc14\bin\data\ -vec C:\opencv\build\x64\vc14\bin\positive_samples.vec -bg C:\opencv\build\x64\vc14\bin\info.txt -numPos 350 -numNeg 690 -numStages 40 -precalcValBufSize 1024 -precalcIdxBufSize 1024 -numThreads 2 -stageType BOOST -featureType LBP -w 41 -h 48 -bt GAB -minHitRate 0.995 -maxFalseAlarmRate 0.5 -weightTrimRate 0.95 -maxDepth 1 -acceptanceRatioBreakValue 0.0000412
+```
 
 In the following link there is a rather complete explanation of the `opencv_traincascade` arguments, as provided by the [official _OpenCV_ documentation](https://docs.opencv.org/3.2.0/dc/d88/tutorial_traincascade.html).
 
@@ -304,11 +304,11 @@ Variable `clock_t t1` indicates the time gap between this assignment and the ini
 
 Below we show a table with snapshots of the software in execution:
 
-|Resource|Setup #1|Setup #2|
-|-|-|-|
-|__*CPU* Multi-Core__| _Average Execution Time_ ≅ 35 ms ![Alt setup1 multicpu](https://i.ibb.co/Wy6d28c/cpumulticore1.png) | _Average Execution Time_ ≅ 205 ms ![Alt setup2 multicpu](https://i.ibb.co/VCmB27d/cpumulticore2.png) |
-|__*CPU* Single-Core__| _Average Execution Time_ ≅ 105 ms ![Alt setup1 singlecpu](https://i.ibb.co/5styNXK/cpusinglecore1.png) | _Average Execution Time_ ≅ 250 ms ![Alt setup2 singlecpu](https://i.ibb.co/dKc2B6V/cpusinglecore2.png) |
-|__*GPU*__| _Average Execution Time_ ≅ 45 ms ![Alt setup1 gpu](https://i.ibb.co/7YNsBPR/gpu1.png) | _Average Execution Time_ ≅ 220 ms ![Alt setup2 gpu](https://i.ibb.co/CzxPbbd/gpu2.png) |
+|Setup #1|Setup #2|
+|:-----:|:-----:|
+|__*CPU* Multi-Core__: _Average Execution Time_ ≅ 35 ms ![Alt setup1 multicpu](https://i.ibb.co/s2Rhkwy/cpumulticore1.png) |__*CPU* Multi-Core__: _Average Execution Time_ ≅ 205 ms ![Alt setup2 multicpu](https://i.ibb.co/3zPY8ct/cpumulticore2.png) |
+|__*CPU* Single-Core__: _Average Execution Time_ ≅ 105 ms ![Alt setup1 singlecpu](https://i.ibb.co/hFQg1dK/cpusinglecore1.png) |__*CPU* Single-Core__: _Average Execution Time_ ≅ 250 ms ![Alt setup2 singlecpu](https://i.ibb.co/xhGK6tb/cpusinglecore2.png) |
+|__*GPU*__: _Average Execution Time_ ≅ 45 ms ![Alt setup1 gpu](https://i.ibb.co/K5fhwdp/gpu1.png) |__*GPU*__: _Average Execution Time_ ≅ 220 ms ![Alt setup2 gpu](https://i.ibb.co/M6XRywN/gpu2.png) |
 
 The _CPU Single-Core_ situation was achieved by setting the _CPU_ affinity of the process to one core only, via the _Task Manager_ of MS Windows.
 

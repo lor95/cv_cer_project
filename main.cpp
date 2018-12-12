@@ -29,8 +29,8 @@ int main(int argc, const char** argv) {
 
 	string data_path = "_data";
 	ostringstream elem;
-	for (auto p = fs::directory_iterator(data_path); p != fs::directory_iterator(); ++p) { // look inside "_data" directory
-		elem << &p; // fetching filenames
+	for (const auto & p : fs::directory_iterator(data_path)) { // look inside "_data" directory
+		elem << p.path(); // fetching filenames
 		if (elem.str().find("calibration_output.xml") != string::npos) {
 			calib_out_bool = true; // if calibration_output.xml is found
 		}

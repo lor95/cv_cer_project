@@ -491,8 +491,6 @@ static bool runCalibration(Settings& s, Size& imageSize, Mat& cameraMatrix, Mat&
 			s.flag);
 	}
 
-	cout << "Re-projection error: " << rms << endl;
-
 	bool ok = checkRange(cameraMatrix) && checkRange(distCoeffs);
 
 	totalAvgErr = computeReprojectionErrors(objectPoints, imagePoints, rvecs, tvecs, cameraMatrix,
