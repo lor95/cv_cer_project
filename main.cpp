@@ -1,4 +1,4 @@
-// this is the master file. It initializes the project 
+// this is the master file. It initializes the project
 #include <iostream>
 #include <sstream>
 #include <filesystem>
@@ -12,7 +12,7 @@
 
 #define SWITCH 32 // space
 #define EXIT 27 // esc
-#define W 75 //mm for target object
+#define W 75 // real width of target object (millimeters)
 
 using namespace std;
 using namespace cv;
@@ -29,8 +29,9 @@ int main(int argc, const char** argv) {
 
 	string data_path = "_data";
 	ostringstream elem;
+
 	for (auto p = fs::directory_iterator(data_path); p != fs::directory_iterator(); ++p) { // look inside "_data" directory
-		elem << &p;
+		elem << p->path(); // fetching filenames
 		if (elem.str().find("calibration_output.xml") != string::npos) {
 			calib_out_bool = true; // if calibration_output.xml is found
 		}
@@ -47,7 +48,7 @@ int main(int argc, const char** argv) {
 	}
 
 	focal_length = _calibration_init();
-	
+
 	Mat mainframe; // main frame from camera
 	GpuMat mainframe_gpu; // main frame from camera
 	VideoCapture capture(0); // open the first camera
@@ -56,12 +57,12 @@ int main(int argc, const char** argv) {
 		return 2;
 	}
 
-	int width = (int)capture.get(CV_CAP_PROP_FRAME_WIDTH);
-	int height = (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int width = (int)capture.get(CV_CAP_PROP_FRAME_WIDTH); // frame width
+	int height = (int)capture.get(CV_CAP_PROP_FRAME_HEIGHT); // frame height
 
 	bool sw = false; // false = use CPU, true = use GPU (CUDA functions)
 
-	fs::path p = "_data\\cascade.xml"; // xml has to be in "<executable>/_data/"
+	fs::path p = "_data\\cascade.xml"; // IMPORTANT: xml has to be in "<executable>/_data/"
 
 	CommandLineParser parser(argc, argv, // cpu parser
 		"{help h||}"
@@ -87,12 +88,12 @@ int main(int argc, const char** argv) {
 	}
 
 	cout << "Executing...\n\nCOMMANDS: Toggle SPACE button to switch between CPU and GPU mode.\nPress ESC to exit.\n\n";
-	
+
 	while (true) { // main loop
-		int k = waitKey(1); //waits for a key indefinitely
+		int k = waitKey(1); // waits for a key indefinitely
 
 		if (k == EXIT) {
-			break; //if key = ESC exit
+			break; // if key = ESC exit
 		}
 		if (k == SWITCH) {
 			sw = !sw;
@@ -117,5 +118,6 @@ int main(int argc, const char** argv) {
 			imshow("gpu_window", mainframe_gpu); // display frame
 		}
 	}
+	destroyAllWindows();
 	return 0;
 }
