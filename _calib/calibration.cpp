@@ -261,7 +261,7 @@ double _calibration_init() {
 	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
 	clock_t prevTimestamp = 0;
 	const Scalar RED(0, 0, 255), GREEN(0, 255, 0);
-	const char ESC_KEY = 110;
+	const char CONTINUE = 110, ESC_KEY = 27;
 
 	while (true) {
 
@@ -340,14 +340,14 @@ double _calibration_init() {
 			drawChessboardCorners(view, s.boardSize, Mat(pointBuf), found);
 		}
 
-		string msg = "Press 'c' to calibrate, 'n' to continue.";
+		string msg = "Press 'c' to calibrate, 'n' to continue. Press 'ESC' to exit";
 
 		if (mode == CAPTURING)
 		{
 			msg = format("%d/%d", (int)imagePoints.size(), s.nrFrames);
 		}
 
-		putText(view, msg, Point2f(10, 30), FONT_HERSHEY_DUPLEX, 0.9, Scalar(0, 0, 255));
+		putText(view, msg, Point2f(10, 30), FONT_HERSHEY_DUPLEX, 0.65, Scalar(0, 0, 255));
 
 		if (blinkOutput)
 			bitwise_not(view, view);
@@ -356,7 +356,7 @@ double _calibration_init() {
 		//! [output_undistorted]
 		if (mode == CALIBRATED)
 		{
-			cout << "Camera succesfully calibrated.\n\n";
+			cout << "Camera successfully calibrated.\n\n";
 			ret = cameraMatrix.at<double>(0, 0) * s.aspectRatio; // *s.aspectRatio; //fx * a = focal length
 			break;
 		}
@@ -366,8 +366,13 @@ double _calibration_init() {
 		imshow("calibration_window", view);
 		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
 
-		if (key == ESC_KEY) {
+		if (key == CONTINUE) {
 			ret = get_focal_length(s); // get focal length
+			break;
+		}
+
+		if (key == ESC_KEY) {
+			ret = -1; // in main() focal_length < 0
 			break;
 		}
 

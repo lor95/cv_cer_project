@@ -1,4 +1,4 @@
-Lorenzo Giuliani, Roberto Minervini - Università Politecnica delle Marche, A.A. 2017/2018.
+﻿Lorenzo Giuliani, Roberto Minervini - Università Politecnica delle Marche, A.A. 2017/2018.
 
 __Esame di Calcolatori Elettronici e Reti di Calcolatori.__
 
@@ -8,13 +8,13 @@ __Esame di Calcolatori Elettronici e Reti di Calcolatori.__
 __CV_cer_project__ is a _computer vision experiment_.
 
 It recognizes a target object of our choice and evaluates its distance from camera and its trajectory.  
-We are using the open-source [__*OpenCV*__](https://opencv.org) libraries which work at both _CPU_ level and _GPU_ level, by making use of [__*NVIDIA CUDA*__](https://developer.nvidia.com/cuda-toolkit) libraries.  
-The repository contains all source files but the utilized third-party libraries, and a short video demonstration of the software's functioning (alternatively, you can [watch it on _YouTube_](https://youtu.be/B1EH1VLk_3c)). 
+We utilize the open-source [__*OpenCV*__](https://opencv.org) libraries which work at both _CPU_ level and _GPU_ level, by also making use of [__*NVIDIA CUDA*__](https://developer.nvidia.com/cuda-toolkit) libraries.  
+The repository contains all source files but the mentioned third-party libraries, and a short video demonstration of the software's functioning (alternatively, you can [watch it on _YouTube_](https://youtu.be/B1EH1VLk_3c)). 
 
 ![Alt target](https://image.ibb.co/dwG0L0/small.png)
 > _Target Object._
 
-Note that, for testing the application, we provide a _PDF_ document containing the image of the 1:1 scale target object (included in `extras/TARGET_printable.pdf`).
+For testing the application, note that we provide a _PDF_ document containing an image of the 1:1 scale target object (included in `extras/TARGET_printable.pdf`).
 
 #### 1.1. Requirements
 
@@ -43,7 +43,7 @@ For the understanding and realization of this project, it was necessary to deepe
 
 _Computer vision_ is an interdisciplinary field that deals with how computers can be made to gain high-level understanding from digital images or videos. From the perspective of engineering, it seeks to automate tasks that the human visual system can do.  
 In computer vision we describe the world that we see in one or more images and reconstruct its properties, such as shape, illumination, and color distributions. This is being used today in a wide variety of real-world applications, which include _motion analysis and capture_, _image restoration_, _object/face recognition and detection_ (which is the main topic of this project), and more.  
-All these applications include methods for acquiring, processing, analyzing and understanding digital images, and for extraction of high-dimensional data from the real-world in order to produce numerical or symbolic information. Particularly, object detection is a computer technology that deals with detecting instances of semantic objects of a certain class (such as humans, buildings, or cars) in digital images and videos. Every object class has its own special features that helps in classifying the class.  
+All these applications include methods for acquiring, processing, analyzing and understanding digital images, and for extraction of high-dimensional data from the real-world in order to produce numerical or symbolic information. Particularly, object detection is a computer technology that deals with detecting instances of semantic objects of a certain class (such as humans, buildings, or cars) in digital images and videos. Every object class has its own special features that help in classifying the class.  
 Methods for object detection generally fall into either machine learning-based approaches or deep learning-based approaches.
 
 _Machine Learning_ is a field of artificial intelligence which uses statistical techniques to give computer systems the ability to "learn" from data (for instance, progressively improve performance on a specific task), without being explicitly programmed to do so.  
@@ -88,12 +88,13 @@ and an even higher number of negatives not containing our object of interest, su
 ![Alt negative_img](https://image.ibb.co/i0GVaA/1-1.jpg)
 > _Photograph taken among the university premises._
 
-Next, we generated the _vector file_ of the positives using the `opencv_createsamples` application, with the following _Command Prompt_ command and requested arguments:
+Next, we generated a _vector file_ of the positives using the `opencv_createsamples` application, with the following _Command Prompt_ command and requested arguments:
 
 ```
 opencv_createsamples
 -vec C:\opencv\build\x64\vc14\bin\positive_samples.vec
--info C:\opencv\build\x64\vc14\bin\info.dat -num 410
+-info C:\opencv\build\x64\vc14\bin\info.dat
+-num 410
 -w 41
 -h 48
 ```
@@ -180,7 +181,7 @@ The `GpuMat` interface matches the `Mat` interface with the following limitation
 * no expression templates technique support.
 
 However, such limitations do not hamper the real objective of this software.  
-Eventually we define an instance of `VideoCapture`, an interface that takes care of communication with the _driver_ of a video device connected to the computer (in our case the `0` device, that is the _default_ one), which with the `>>` operator allows us to acquire frames from the device itself:
+Eventually we define an instance of `VideoCapture`, an interface that takes care of communication with the _driver_ of a video device connected to the computer (in our case the `0` device, that is the _default_ one), which allows us to acquire frames from the device itself, by using the `>>` operator:
 
 ```cpp
 while(true) {
@@ -198,9 +199,9 @@ while(true) {
 return 0;
 ```
 
-this cycle is the heart of the software; in here frames are repeatedly acquired by the camera and are appropriately processed according to whether the user wants to exploit the capacity of his own _CPU_ or _GPU_. This choice can be made by pressing the key "_spacebar_", thus alternating between the two modes.  
+this cycle is the heart of the software; in here frames are repeatedly acquired by the camera and are appropriately processed according to whether the user wants to exploit the capacity of his own _CPU_ or _GPU_. This choice can be made by pressing the "_spacebar_" key, thus alternating between the two modes.  
 Note that `mainframe_gpu` is defined by passing the acquired element of type `Mat` to `main_logic_gpu()`. The contents of this `Mat` element will be uploaded to _GPU_ memory within the mentioned method (more in detail at paragraph _3.5._).  
-Finally, it is important to specify that, by pressing the "_ESC_" key, it is possible to exit the `while()` loop, thus returning `int 0`.
+Finally, it is important to specify that it is possible to exit the `while()` loop by pressing the "_ESC_" key, thus returning `int 0`.
   
 #### 3.3. - Calibration
 
@@ -213,7 +214,7 @@ The calibration parameters are defined in the `_data/calibration_input.xml` file
 _OpenCV_ currently supports 3 different types of patterns; in our case a predetermined chessboard pattern is defined inside `_data/calibration_input.xml`.  
 We provide a chessboard pattern in _PDF_ at the following path: `extras/CHESSBOARD_pattern.pdf`; or it can also be downloaded directly from the [official source](https://docs.opencv.org/3.4/pattern.png).  
 For a good calibration it's recommended to use as many samples (frames, node `<Calibrate_NrOfFrameToUse>`) as possible, at least 20. The chessboard must be rigid, because if it's wrinkled or flopping around it will affect calibration. Moreover, the chessboard must take up as much of the camera view as possible. During calibration, the chessboard must be rotated and skewed.  
-At the end of the calibration phase, an output `_data/calibration_output.xml` file is generated. The core of our interest is `<camera_matrix>` (_Camera Matrix_), which describes the mapping of a pinhole camera from 3D points in the world to 2D points in an image. In here `fx` and `fy` are represented, respectively being the focal length on the abscissas and the focal length on the ordinates (in pixels) of the camera in use.  
+At the end of the calibration phase, an output `_data/calibration_output.xml` file is generated. The core of our interest is `<camera_matrix>` (_Camera Matrix_), which describes the mapping of a pinhole camera from 3D points in the world to 2D points in an image. In here two variables are represented, `fx` and `fy`, respectively being the focal length on the abscissas and the focal length on the ordinates (in pixels) of the camera in use.  
 These values ​​are also linked by the equation `fy = fx * a`, where `a` is the _aspect ratio_, defined among the calibration parameters. If `a = 1` then `fy = fx = F`, where `F` is the _focal length_ (in pixels) of the camera.
 
 ![Alt camera matrix](https://docs-assets.developer.apple.com/published/ffb3831f78/b127969e-7bf7-414b-800b-5b8c20e2b610.png)
@@ -238,10 +239,12 @@ fs["camera_matrix"] >> cameraMatrix;
 return cameraMatrix.at<double>(1, 1);
 ```
 
-If an error occurs during reading (file does not exist or it is corrupted), a value of _default_ is returned; otherwise, unlike the previous `return`, the `fy` of the matrix camera is returned directly, since we have `fy = F`, again from the previous relation.  
-The focal length is used to approximate the _real distance_ we want to calculate (`D`, in millimeters) of the object identified in the matrix, based on the perceived (`P`, in pixels) and the real (`W`, in millimeters) dimensions of the object itself, as defined with `#define W 75` in `main.cpp`:
+If an error occurs during reading (file does not exist or it is corrupted), a value of _default_ is returned; otherwise, unlike the previous `return`, the `fy` of the matrix camera is returned directly, since we have that `fy = F`, again from the previous relation.  
+The focal length is used to approximate the _real distance_ we want to calculate (`D`, in millimeters) of the object identified in the matrix, based on the perceived (`P`, in pixels) and the real (`W`, in millimeters) dimensions of the object itself, as defined with `#define W 75` inside `main.cpp`:
 
 `D = (W * F) / P`.
+
+Alternatively, the user can decide to exit the program. In this case, a negative focal length value is returned, interpreted by the `main()` function as a key to exit the program.
 
 #### 3.4. - _CPU_
 
@@ -255,7 +258,7 @@ cv::equalizeHist(fgray, fgray);
 
 `cvtColor()` converts the contents of a `Mat` instance to a specific property (in this case, `COLOR_BGR2GRAY` converts RGB images to grayscale) and stores the results inside the given `Mat fgray` output.  
 The contents of `fgray` are once again processed by `equalizeHist()`, which equalizes the histogram of the contained grayscale images; this particular method is strictly necessary for our purposes, because it increases the global contrast of the images and enhances details that can be determining for the detection of our object of interest.  
-As a matter of fact, "histogram equalization often produces unrealistic effects in photographs; however it is very useful for scientific images like thermal, satellite or x-ray images" (see [link](https://en.wikipedia.org/wiki/Histogram_equalization) for further details).
+As a matter of fact, "histogram equalization often produces unrealistic effects in photographs; however, it is very useful for scientific images like thermal, satellite or x-ray images" (see [link](https://en.wikipedia.org/wiki/Histogram_equalization) for further details).
 
 Next we define:
 
@@ -265,7 +268,7 @@ std::vector<Point> centers;
 std::vector<double> distances;
 ```
 
-these objects respectively are the vector designed to contain one or more instances of the target identified in the frame, the vector containing the center of those same objects and the vector containing the distance of each target from camera. It follows that `dim(targets) = dim(centers) = dim(distances)`, because in each frame we have a center for every object, with related distance.
+these objects respectively are the vector designed to contain one or more instances of the target identified in the frame, the vector containing the center of those same objects, and the vector containing the distance of each target from camera. It follows that `dim(targets) = dim(centers) = dim(distances)`, because in each frame we have a center for every object, with the relative distance.
 
 ```cpp
 cascade.detectMultiScale(fgray, targets, 1.1, 5, ...);
@@ -341,25 +344,25 @@ cascade_gpu->convert(fgray, targets);
 ```
 
 The first two methods simply are _GPU_ equivalents of the ones called inside `main_logic_cpu()`.  
-Now, we detail the differences of the `cv::cuda::CascadeClassifier` method `detectMultiScale()`; unlike the `cv::CascadeClassifier` one used in `main_logic_cpu()`, the _GPU_ version of this method requests just two arguments, the input matrix of frames and the output buffer where to store the detected objects (in the form of rectangles); in the case of `detectMultiScale(fgray, fgray)` we use `GpuMat fgray` as both the input matrix and the output buffer.  
+Now, we detail the differences of the `cv::cuda::CascadeClassifier` method `detectMultiScale()`; unlike the `cv::CascadeClassifier` one used in `main_logic_cpu()`, the _GPU_ version of this method requests just two arguments, the input matrix of frames and the output buffer where to store the detected objects (in the form of rectangles); in the case of `detectMultiScale(fgray, fgray)`, we use `GpuMat fgray` as both the input matrix and the output buffer.  
 The '_missing_' parameters, the ones we have seen being added to `detectMultiScale()` in `main_logic_cpu()`, are actually defined before this method.  
-We are talking about `setScaleFactor(1.1)` and `setMinNeighbors(5)`; their values exactly mirror those present inside `main_logic_cpu()` in `detectMultiScale()`. Changes to such values respectively affect the quality and quantity of detections, and the required minimum size for an object to be detected.  
+We are talking about `setScaleFactor(1.1)` and `setMinNeighbors(5)`; their values exactly mirror those present inside `main_logic_cpu()` in `detectMultiScale()`. Changes to such values affect the quality and quantity of detections, and the required minimum size for an object to be detected.  
 Finally, we convert the objects array from the internal representation to the standard vector of rectangles `targets`.  
 The rest of the code mirrors that of `main_logic_cpu()`, although it is worth noting that all the on-screen strings we show on the frames can only be written on a `Mat` instance, not on a `GpuMat` object.  
-To this end, we utilize the given `Mat frame` requested by our `main_logic_gpu()` method, by filling it with all the necessary strings for displaying our detection details. At the very end:
+To this end, we utilize the given `Mat frame` requested by our `main_logic_gpu()` method, by filling it with all strings necessary for displaying our detection details. At the very end:
 
 ```cpp
 frame_gpu.upload(frame);
 return frame_gpu;
 ```
 
-we upload all the contents of this loaded `Mat frame` object to the original `GpuMat frame_gpu`. Then, `main_logic_gpu()` returns an instance of `GpuMat` unlike `main_logic_cpu()`, which returns an instance of `Mat`.  
+we upload all the contents of this loaded `Mat frame` object to the original `GpuMat frame_gpu`. Then, `main_logic_gpu()` returns an instance of `GpuMat`, unlike `main_logic_cpu()` which returns an instance of `Mat`.  
 By design, this allowed us to have and use a `GpuMat` instance for the `imshow()` method called inside our `main()`.
 
 
 ## 4. Results
 
-To distinctly calculate the execution time of the program for _CPU_ and _GPU_, we have used the _C_ library `time.h`:
+To distinctly calculate the execution time of the program on _CPU_ and on _GPU_, we have used the _C_ library `time.h`:
 
 ```cpp
 clock_t t0 = clock();
@@ -369,7 +372,7 @@ clock_t t1 = clock() - t0;
 
 Variable `clock_t t1` indicates the time gap between this assignment and the initialization of` clock_t t0`.
 
-To highlight the various differences of execution we perform various tests on both setups.  
+To highlight the various differences of execution, we performed various tests on both setups.  
 Below we show a table with snapshots of the software in execution:
 
 |Setup #1|Setup #2|
@@ -390,7 +393,7 @@ _Setup #2_ (see paragraph _1.2._) does not show noticeable performance changes b
 We also want to point out that execution times on _CPU_ can vary due to the presence of processes running in background on the operating system. While hardware definetely affects the execution time, any additional softwares can take up important resources and slow down the entire execution on _CPU_.
 
 As mentioned previously at paragraph _3.5._, there is no clear advantage in using a specialized `cv::cuda::CascadeClassifier` for _GPU_ use; in fact, as of _OpenCV_ version _3.1.0_, there have been reports that such _GPU_ implementation can be slower, due to bottlenecks when dealing with large resolution images.  
-Moreover, having built _OpenCV_ libraries through _CMake_, support for processor supplementary capabilities (namely the _MMX_, _SSE_, _SSE2_, _SSE3_, _AVX_ and _AVX2 SIMD_ instruction sets designed by _Intel_) has been included by default; _MMX_ (_Multimedia Extensions_), _SSE_ (_Streaming SIMD Extensions_) and _AVX_ (_Advanced Vector Extensions_) were introduced as extensions (as the name implies) of the x86 instruction set architecture, in order to optimize performance of multimedia applications.  
+Moreover, having built _OpenCV_ libraries through _CMake_, support for processor supplementary capabilities (namely the _MMX_, _SSE_, _SSE2_, _SSE3_, _AVX_ and _AVX2 SIMD_ instruction sets designed by _Intel_) has been included by default; _MMX_ (_Multimedia Extensions_), _SSE_ (_Streaming SIMD Extensions_) and _AVX_ (_Advanced Vector Extensions_) were introduced as extensions (as the name implies) of the x86 instruction set architecture, in order to optimize the performance of multimedia applications.  
 For instance, _MMX_ provides specific registers and contains 57 new instructions (only integer operations) that treat data in a _SIMD_ fashion, which makes it possible to perform the same operation, such as addition or multiplication, on multiple data elements at once.  
 _MMX_ is usually meant to operate on video and audio data, typically composed of large arrays of small data types, such as 8 or 16 bits. In graphics and video, a single scene consists of an array of pixels, and there are 8 bits for each pixel or 8 bits for each pixel color component (Red, Green, Blue).  
 _SSE_ floating point instructions operate on a new independent register set and expand the number of integer instructions that work on _MMX_ registers.  

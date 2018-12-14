@@ -28,26 +28,27 @@ int main(int argc, const char** argv) {
 	cout << "CV_CER_PROJECT.\n\n";
 
 	string data_path = "_data";
-	ostringstream elem;
 
 	for (auto p = fs::directory_iterator(data_path); p != fs::directory_iterator(); ++p) { // look inside "_data" directory
-		elem << p->path(); // fetching filenames
-		if (elem.str().find("calibration_output.xml") != string::npos) {
+		if (p->path().string().find("calibration_output.xml") != string::npos) { // fetching filenames
 			calib_out_bool = true; // if calibration_output.xml is found
 		}
-		elem.str("");
 	}
 
 	if (calib_out_bool) {
 		cout << "FILE: \"calibration_output.xml\" has been found.\n\nOpening camera...\n\n";
-		cout << "CALIBRATION OPTIONS : Press 'c' to RECALIBRATE, 'n' to continue.\n\n";
+		cout << "CALIBRATION OPTIONS : Press 'c' to RECALIBRATE, 'n' to continue.\n";
 	}
 	else {
 		cout << "FILE: \"calibration_output.xml\" has not been found.\n\nOpening camera...\n\n";
-		cout << "CALIBRATION OPTIONS : Press 'c' to CALIBRATE, 'n' to continue.\n\n";
+		cout << "CALIBRATION OPTIONS : Press 'c' to CALIBRATE, 'n' to continue.\n";
 	}
+	cout << "Press ESC to exit.\n\n";
 
 	focal_length = _calibration_init();
+	if (focal_length < 0) { // if key = ESC in calibration window focal_length = -1
+		return 0;
+	}
 
 	Mat mainframe; // main frame from camera
 	GpuMat mainframe_gpu; // main frame from camera
