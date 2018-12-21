@@ -219,7 +219,7 @@ These values ​​are also linked by the equation `fy = fx * a`, where `a` is t
 
 ![Alt camera matrix](https://docs-assets.developer.apple.com/published/ffb3831f78/b127969e-7bf7-414b-800b-5b8c20e2b610.png)
 > _Camera Matrix_ `K`;  
-> `ox` _and_ `oy` _are the camera's optical centers._
+> `ox` _and_ `oy` _are the coordinates of the camera's optical center._
 
 Focal length's value automatically returns back to the `main()` method:
 
@@ -377,7 +377,7 @@ Below we show a table with snapshots of the software in execution:
 
 |Setup #1|Setup #2|
 |:-----:|:-----:|
-|__*CPU* Multi-Core__: _Average Execution Time_ ≅ 35 ms|*CPU* Multi-Core__: _Average Execution Time_ ≅ 205 ms|
+|__*CPU* Multi-Core__: _Average Execution Time_ ≅ 35 ms|__*CPU* Multi-Core__: _Average Execution Time_ ≅ 205 ms|
 |![Alt setup1 multicpu](https://i.ibb.co/s2Rhkwy/cpumulticore1.png)|![Alt setup2 multicpu](https://i.ibb.co/3zPY8ct/cpumulticore2.png)|
 |__*CPU* Single-Core__: _Average Execution Time_ ≅ 105 ms|__*CPU* Single-Core__: _Average Execution Time_ ≅ 250 ms|
 |![Alt setup1 singlecpu](https://i.ibb.co/hFQg1dK/cpusinglecore1.png)|![Alt setup2 singlecpu](https://i.ibb.co/xhGK6tb/cpusinglecore2.png)|
@@ -405,4 +405,5 @@ Therefore we can conclude that, in our case, a multi-core system with all its _C
 
 _Edited by_
 
-__Lorenzo Giuliani, Roberto Minervini__
+__Lorenzo Giuliani__  
+__Roberto Minervini__

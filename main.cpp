@@ -37,11 +37,11 @@ int main(int argc, const char** argv) {
 
 	if (calib_out_bool) {
 		cout << "FILE: \"calibration_output.xml\" has been found.\n\nOpening camera...\n\n";
-		cout << "CALIBRATION OPTIONS : Press 'c' to RECALIBRATE, 'n' to continue.\n";
+		cout << "CALIBRATION OPTIONS: Press 'c' to RECALIBRATE, 'n' to continue.\n";
 	}
 	else {
 		cout << "FILE: \"calibration_output.xml\" has not been found.\n\nOpening camera...\n\n";
-		cout << "CALIBRATION OPTIONS : Press 'c' to CALIBRATE, 'n' to continue.\n";
+		cout << "CALIBRATION OPTIONS: Press 'c' to CALIBRATE, 'n' to continue.\n";
 	}
 	cout << "Press ESC to exit.\n\n";
 
@@ -90,6 +90,11 @@ int main(int argc, const char** argv) {
 
 	cout << "Executing...\n\nCOMMANDS: Toggle SPACE button to switch between CPU and GPU mode.\nPress ESC to exit.\n\n";
 
+	namedWindow("cpu_window", WINDOW_NORMAL);
+	resizeWindow("cpu_window", width, height);
+	namedWindow("gpu_window", WINDOW_OPENGL);
+	resizeWindow("gpu_window", width, height);
+
 	while (true) { // main loop
 		int k = waitKey(1); // waits for a key indefinitely
 
@@ -107,14 +112,10 @@ int main(int argc, const char** argv) {
 			return 3;
 		}
 		if (!sw) { // code for CPU
-			namedWindow("cpu_window", WINDOW_NORMAL);
-			resizeWindow("cpu_window", width, height);
 			mainframe = main_logic_cpu(mainframe, target_cascade, focal_length, W);
 			imshow("cpu_window", mainframe); // display frame
 		}
 		else { // code for GPU
-			namedWindow("gpu_window", WINDOW_OPENGL);
-			resizeWindow("gpu_window", width, height);
 			mainframe_gpu = main_logic_gpu(mainframe, target_cascade_gpu, focal_length, W);
 			imshow("gpu_window", mainframe_gpu); // display frame
 		}
